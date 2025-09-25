@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// --- ユーザー関連 ---
+model User {
+  id           String   @id             // Firebase uid
+  email        String?  @unique         // プロバイダによっては null あり得る
+  username     String?                   // GoogleのdisplayNameを初期値に
+  iconUrl      String?                   // GoogleのphotoURLを初期値に  iconUrl      String?
+  karmaScore   Int @default(0)
+
+  posts        Post[]
+  comments     Comment[]
+  postLikes    PostLike[]
+  postVotes    PostVote[]
+  commentLikes CommentLike[]
+  commentVotes CommentVote[]
+}
+
+/// --- 投稿関連 ---
+model Post {
+  id        Int       @id @default(autoincrement())
+  userId    String
+  title     String    @unique
+  content   String
+  createdAt DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id])
+  likes     PostLike[]
+  votes     PostVote[]
+  comments  Comment[]
+}
+
+/// --- コメント関連 ---
+model Comment {
+  id        Int       @id @default(autoincrement())
+  postId    Int
+  userId    String
+  content   String
+  createdAt DateTime  @default(now())
+
+  post      Post      @relation(fields: [postId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+  likes     CommentLike[]
+  votes     CommentVote[]
+}
+
+/// --- 投稿へのリアクション ---
+model PostLike {
+  id        Int       @id @default(autoincrement())
+  postId    Int
+  userId    String
+  createdAt DateTime  @default(now())
+
+  post      Post      @relation(fields: [postId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId])
+}
+
+model PostVote {
+  id        Int       @id @default(autoincrement())
+  postId    Int
+  userId    String
+  voteType  VoteType
+  createdAt DateTime  @default(now())
+
+  post      Post      @relation(fields: [postId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId])
+}
+
+/// --- コメントへのリアクション ---
+model CommentLike {
+  id        Int       @id @default(autoincrement())
+  commentId Int
+  userId    String
+  createdAt DateTime  @default(now())
+
+  comment   Comment   @relation(fields: [commentId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@unique([commentId, userId])
+}
+
+model CommentVote {
+  id        Int       @id @default(autoincrement())
+  commentId Int
+  userId    String
+  voteType  VoteType
+  createdAt DateTime  @default(now())
+
+  comment   Comment   @relation(fields: [commentId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@unique([commentId, userId])
+}
+
+/// --- 投票の種類を定義する列挙型 ---
+enum VoteType {
+  UP
+  DOWN
+}
