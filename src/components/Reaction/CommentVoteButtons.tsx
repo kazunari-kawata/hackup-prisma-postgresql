@@ -2,32 +2,25 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ThumbsDownIcon, ThumbsUpIcon } from "./Icons/ThumbsUpDown";
-import { useAuthState } from "@/lib/auth/useAuth";
 
-type VoteButtonsProps = {
-  postId: number;
-  userId?: string; // オプショナルに変更（認証情報から自動取得）
+type CommentVoteButtonsProps = {
+  commentId: number;
+  userId: string;
 };
 
-export default function VoteButtons({
-  postId,
-  userId: propUserId,
-}: VoteButtonsProps) {
-  const { user, isAuthenticated } = useAuthState();
-  const userId = propUserId || user?.uid || "";
-
+export default function CommentVoteButtons({
+  commentId,
+  userId,
+}: CommentVoteButtonsProps) {
   const [vote, setVote] = useState<"UP" | "DOWN" | null>(null);
   const [upCount, setUpCount] = useState(0);
   const [downCount, setDownCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  // 未認証ユーザーの場合は投票機能を無効化
-  const canVote = isAuthenticated && userId;
-
   // 投票データを取得
   const fetchVotes = useCallback(async () => {
     try {
-      const res = await fetch(`/api/post-votes?postId=${postId}`);
+      const res = await fetch(`/api/comment-votes?commentId=${commentId}`);
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.error || "投票データの取得に失敗しました");
@@ -39,16 +32,25 @@ export default function VoteButtons({
       setDownCount(
         votes.filter((v: { voteType: string }) => v.voteType === "DOWN").length
       );
-      const myVote = votes.find((v: { userId: string }) => v.userId === userId);
-      setVote(myVote?.voteType ?? null);
+
+      // userIdが空の場合は投票状態をnullに設定
+      if (!userId) {
+        setVote(null);
+      } else {
+        const myVote = votes.find(
+          (v: { userId: string }) => v.userId === userId
+        );
+        setVote(myVote?.voteType ?? null);
+      }
+
       setError(null);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "データの取得に失敗しました";
       setError(errorMessage);
-      console.error("Fetch Votes Error:", err);
+      console.error("Fetch Comment Votes Error:", err);
     }
-  }, [postId, userId]);
+  }, [commentId, userId]);
 
   // アゲサゲボタン初期ロード
   useEffect(() => {
@@ -57,6 +59,12 @@ export default function VoteButtons({
 
   // アゲサゲボタン押下時
   const handleVote = async (type: "UP" | "DOWN") => {
+    // 認証されていない場合は何もしない
+    if (!userId) {
+      console.warn("User not authenticated, cannot vote");
+      return;
+    }
+
     const prevVote = vote;
     const prevUpCount = upCount;
     const prevDownCount = downCount;
@@ -65,7 +73,7 @@ export default function VoteButtons({
       if (vote === type) {
         // 同じ投票の取り消し
         const res = await fetch(
-          `/api/post-votes?postId=${postId}&userId=${userId}`,
+          `/api/comment-votes?commentId=${commentId}&userId=${userId}`,
           {
             method: "DELETE",
           }
@@ -79,11 +87,11 @@ export default function VoteButtons({
         setDownCount((c) => (type === "DOWN" ? Math.max(0, c - 1) : c));
       } else {
         // 新規投票 or 切り替え
-        const res = await fetch(`/api/post-votes`, {
+        const res = await fetch(`/api/comment-votes`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            postId,
+            commentId,
             userId,
             voteType: type,
           }),
@@ -103,39 +111,27 @@ export default function VoteButtons({
       const errorMessage =
         err instanceof Error ? err.message : "投票に失敗しました";
       setError(errorMessage);
-      console.error("Vote Error:", err);
+      console.error("Comment Vote Error:", err);
     }
   };
 
   return (
     <>
       {error && <p className="text-red-500">{error}</p>}
-      {!canVote && (
-        <p className="text-gray-500 text-sm mb-2">
-          投票するにはログインが必要です
-        </p>
-      )}
       <li>
         <button
-          onClick={() => canVote && handleVote("UP")}
-          disabled={!canVote}
-          className={`flex items-center gap-1 ${
-            !canVote ? "opacity-50 cursor-not-allowed" : ""
+          onClick={() => handleVote("UP")}
+          className={`flex items-center gap-1 px-2 py-1 rounded-md transition-all duration-200 ${
+            vote === "UP"
+              ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
+              : "text-gray-500 hover:text-blue-500 hover:bg-gray-50"
           }`}
         >
+          <ThumbsUpIcon />
           <span
-            className={
-              vote === "UP"
-                ? "text-blue-500 flex items-center gap-1"
-                : "flex items-center gap-1"
-            }
-          >
-            <ThumbsUpIcon />
-          </span>
-          <span
-            className={
-              vote === "UP" ? "text-blue-500 ms-2" : "text-gray-400 ms-2"
-            }
+            className={`font-medium ms-2 ${
+              vote === "UP" ? "text-blue-600" : "text-gray-500"
+            }`}
           >
             {upCount}
           </span>
@@ -143,25 +139,18 @@ export default function VoteButtons({
       </li>
       <li>
         <button
-          onClick={() => canVote && handleVote("DOWN")}
-          disabled={!canVote}
-          className={`flex items-center gap-1 ${
-            !canVote ? "opacity-50 cursor-not-allowed" : ""
+          onClick={() => handleVote("DOWN")}
+          className={`flex items-center gap-1 px-2 py-1 rounded-md transition-all duration-200 ${
+            vote === "DOWN"
+              ? "text-red-600 bg-red-50 hover:bg-red-100"
+              : "text-gray-500 hover:text-red-500 hover:bg-gray-50"
           }`}
         >
+          <ThumbsDownIcon />
           <span
-            className={
-              vote === "DOWN"
-                ? "text-red-500 flex items-center gap-1"
-                : "flex items-center gap-1"
-            }
-          >
-            <ThumbsDownIcon />
-          </span>
-          <span
-            className={
-              vote === "DOWN" ? "text-red-500 ms-2" : "text-gray-400 ms-2"
-            }
+            className={`font-medium ms-2 ${
+              vote === "DOWN" ? "text-red-600" : "text-gray-500"
+            }`}
           >
             {downCount}
           </span>

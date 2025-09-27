@@ -1,8 +1,8 @@
 "use client";
-import { Post as PostType } from "@/lib/dao/post";
+import { PostWithUser } from "@/lib/dao/post";
 
 type HackTitleContentProps = {
-  post: PostType;
+  post: PostWithUser;
 };
 
 export default function HackTitleContent({ post }: HackTitleContentProps) {

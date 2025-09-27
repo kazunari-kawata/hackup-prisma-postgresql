@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
 /**
- * コメントへの投票（GOOD/BAD）全件を取得する関数
+ * コメントへの投票（UP/DOWN）全件を取得する関数
  * すべてのCommentVoteレコード（誰がどのコメントに投票したか）を配列で返します。
  * 例：管理画面や集計などで利用できます。
  */
@@ -11,7 +11,7 @@ export async function getCommentVotes() {
       id: true, // 投票のID
       commentId: true, // どのコメントへの投票か
       userId: true, // どのユーザーが投票したか
-      voteType: true, // GOODかBADか
+      voteType: true, // UPかDOWNか
       createdAt: true, // 投票した日時
     },
     orderBy: {
@@ -39,14 +39,14 @@ export async function getCommentVoteById(id: number) {
 }
 
 /**
- * コメントに投票（GOOD/BAD）を新規作成する関数
- * @param data commentId: 投票するコメントのID, userId: 投票したユーザーのID, voteType: "GOOD"または"BAD"
- * 例：ユーザーがコメントにGOOD/BADボタンを押したときに呼び出します。
+ * コメントに投票（UP/DOWN）を新規作成する関数
+ * @param data commentId: 投票するコメントのID, userId: 投票したユーザーのID, voteType: "UP"または"DOWN"
+ * 例：ユーザーがコメントにUP/DOWNボタンを押したときに呼び出します。
  */
 export async function createCommentVote(data: {
   commentId: number;
   userId: string;
-  voteType: "GOOD" | "BAD";
+  voteType: "UP" | "DOWN";
 }) {
   return await prisma.commentVote.create({
     data: {

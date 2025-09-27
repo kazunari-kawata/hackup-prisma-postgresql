@@ -4,17 +4,20 @@ import { prisma } from "@/lib/prisma";
 // GET: 投票データを取得
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const postId = searchParams.get("postId");
-  if (!postId) {
-    return NextResponse.json({ error: "postId is required" }, { status: 400 });
+  const commentId = searchParams.get("commentId");
+  if (!commentId) {
+    return NextResponse.json(
+      { error: "commentId is required" },
+      { status: 400 }
+    );
   }
   try {
-    const votes = await prisma.postVote.findMany({
-      where: { postId: Number(postId) },
+    const votes = await prisma.commentVote.findMany({
+      where: { commentId: Number(commentId) },
     });
     return NextResponse.json(votes);
   } catch (error) {
-    console.error("GET Post Votes Error:", error);
+    console.error("GET Comment Votes Error:", error);
     return NextResponse.json(
       { error: "Failed to fetch votes" },
       { status: 500 }
@@ -25,28 +28,28 @@ export async function GET(req: NextRequest) {
 // POST: 投票を追加/更新
 export async function POST(req: NextRequest) {
   try {
-    const { postId, userId, voteType } = await req.json();
-    if (!postId || !userId || !voteType) {
+    const { commentId, userId, voteType } = await req.json();
+    if (!commentId || !userId || !voteType) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
     }
     // 既存の投票を削除
-    await prisma.postVote.deleteMany({
-      where: { postId: Number(postId), userId },
+    await prisma.commentVote.deleteMany({
+      where: { commentId: Number(commentId), userId },
     });
     // 新しい投票を追加
-    const newVote = await prisma.postVote.create({
+    const newVote = await prisma.commentVote.create({
       data: {
-        postId: Number(postId),
+        commentId: Number(commentId),
         userId,
         voteType,
       },
     });
     return NextResponse.json(newVote, { status: 201 });
   } catch (error) {
-    console.error("POST Post Vote Error:", error);
+    console.error("POST Comment Vote Error:", error);
     return NextResponse.json(
       { error: "Failed to create vote" },
       { status: 500 }
@@ -57,21 +60,21 @@ export async function POST(req: NextRequest) {
 // DELETE: 投票を削除
 export async function DELETE(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const postId = searchParams.get("postId");
+  const commentId = searchParams.get("commentId");
   const userId = searchParams.get("userId");
-  if (!postId || !userId) {
+  if (!commentId || !userId) {
     return NextResponse.json(
-      { error: "postId and userId are required" },
+      { error: "commentId and userId are required" },
       { status: 400 }
     );
   }
   try {
-    await prisma.postVote.deleteMany({
-      where: { postId: Number(postId), userId },
+    await prisma.commentVote.deleteMany({
+      where: { commentId: Number(commentId), userId },
     });
     return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error("DELETE Post Vote Error:", error);
+    console.error("DELETE Comment Vote Error:", error);
     return NextResponse.json(
       { error: "Failed to delete vote" },
       { status: 500 }

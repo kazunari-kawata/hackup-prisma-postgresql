@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 
 /**
  * すべてのコメントを取得する関数
- * 投稿された全コメントを配列で返します。
+ * 投稿された全コメントを配列で返します。ユーザー情報も含みます。
  * 例：記事詳細ページや管理画面でコメント一覧を表示したいときに使います。
  */
 export async function getComments(PostId: number) {
@@ -14,6 +14,14 @@ export async function getComments(PostId: number) {
       userId: true, // コメントしたユーザーのID
       content: true, // コメント本文
       createdAt: true, // コメントした日時
+      user: {
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          iconUrl: true,
+        },
+      },
     },
     orderBy: {
       createdAt: "desc", // 新しい順に並べる
@@ -26,6 +34,12 @@ export type Comment = {
   userId: string;
   content: string;
   createdAt: Date;
+  user: {
+    id: string;
+    username: string | null;
+    email: string | null;
+    iconUrl: string | null;
+  };
 };
 /**
  * 指定したIDのコメント1件を取得する関数

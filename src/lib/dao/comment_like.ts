@@ -20,6 +20,26 @@ export async function getCommentLikes() {
 }
 
 /**
+ * 特定のコメントへの「いいね」一覧を取得する関数
+ * @param commentId 取得したいコメントのID
+ * 例：コメントごとのいいね数表示やいいねユーザー一覧表示に利用します。
+ */
+export async function getCommentLikesByCommentId(commentId: number) {
+  return await prisma.commentLike.findMany({
+    where: { commentId },
+    select: {
+      id: true,
+      commentId: true,
+      userId: true,
+      createdAt: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}
+
+/**
  * 指定したIDの「コメントいいね」1件を取得する関数
  * @param id 取得したいCommentLikeのID
  * 例：詳細画面や個別操作時に利用します。

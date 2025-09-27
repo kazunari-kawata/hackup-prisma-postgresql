@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { PostSchema } from "@/validations/contact";
 import { prisma } from "@/lib/prisma";
 import { PostLike, PostVote } from "@/generated/prisma";
-import { User } from "next-auth";
+import { validateAuthenticatedUser } from "@/lib/auth/serverAuth";
 
 // ActionStateの型定義
 type ActionState = {
@@ -20,15 +20,20 @@ export async function submitPostForm(
   prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  console.log("submitPostForm: Function called");
+
   const title = formData.get("title") as string;
   const content = formData.get("content") as string;
+  const userId = formData.get("userId") as string;
+
+  console.log("submitPostForm: Received data", { title, content, userId });
 
   // バリデーション
   const validationResult = PostSchema.safeParse({ title, content });
 
   if (!validationResult.success) {
     const errors = validationResult.error.flatten().fieldErrors;
-    console.log("サーバー側でエラー", errors);
+    console.log("submitPostForm: Validation failed", errors);
     return {
       success: false,
       errors: {
@@ -52,11 +57,33 @@ export async function submitPostForm(
       },
     };
   }
-  // todo: ユーザーIDは実際のログインユーザーのIDを使用する必要があります。
-  // !重要: ユーザーIDは実際のログインユーザーのIDを使用する必要があります。
-  const userId = formData.get("userId") as string;
+
+  // ユーザー認証チェック
+  console.log("submitPostForm: Starting user authentication check");
+  try {
+    await validateAuthenticatedUser(userId);
+    console.log("submitPostForm: User authentication successful");
+  } catch (error) {
+    console.log("submitPostForm: User authentication failed", error);
+    return {
+      success: false,
+      errors: {
+        title: [],
+        content: [],
+      },
+      serverError:
+        error instanceof Error ? error.message : "認証エラーが発生しました",
+    };
+  }
+
+  console.log("submitPostForm: Creating post in database");
   await prisma.post.create({
-    data: { title, content, userId: "1" },
+    data: { title, content, userId: userId },
+  });
+  console.log("submitPostForm: Post created successfully", {
+    title,
+    content,
+    userId,
   });
 
   console.log("送信されたデータ", title, content);
@@ -71,6 +98,12 @@ export async function getPosts() {
       content: true,
       userId: true,
       createdAt: true,
+      user: {
+        select: {
+          username: true,
+          iconUrl: true,
+        },
+      },
     },
     orderBy: {
       createdAt: "desc",
@@ -90,8 +123,14 @@ export type Post = {
   title: string;
   content: string;
   createdAt: Date;
-  user?: User;
+  user?: {
+    username: string | null;
+    iconUrl: string | null;
+  };
   likes?: PostLike[];
   votes?: PostVote[];
   comments?: Comment[];
 };
+
+// getPosts()から返される実際の型
+export type PostWithUser = Awaited<ReturnType<typeof getPosts>>[number];

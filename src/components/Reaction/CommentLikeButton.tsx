@@ -3,12 +3,15 @@
 import { useEffect, useState, useCallback } from "react";
 import { LikeIcon, LikedIcon } from "./Icons/Likes";
 
-type LikeButtonProps = {
-  postId: number;
+type CommentLikeButtonProps = {
+  commentId: number;
   userId: string;
 };
 
-export default function LikeButton({ postId, userId }: LikeButtonProps) {
+export default function CommentLikeButton({
+  commentId,
+  userId,
+}: CommentLikeButtonProps) {
   const [likeCount, setLikeCount] = useState(0);
   const [liked, setLiked] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -16,32 +19,39 @@ export default function LikeButton({ postId, userId }: LikeButtonProps) {
   // いいねデータを取得する関数
   const fetchLikes = useCallback(async () => {
     try {
-      const res = await fetch(`/api/post-likes?postId=${postId}`);
+      const res = await fetch(`/api/comment-likes?commentId=${commentId}`);
       if (!res.ok) {
-        throw new Error("Failed to fetch likes");
+        throw new Error("Failed to fetch comment likes");
       }
       const likes = await res.json();
-
-      // 全体のいいね数を設定（すべてのユーザーのいいねの合計）
       setLikeCount(likes.length);
 
-      // 現在のユーザーがいいねしているかをチェック
-      const currentUserLiked = likes.some(
-        (like: { userId: string }) => like.userId === userId
-      );
-      setLiked(currentUserLiked);
+      // userIdが空の場合はliked状態をfalseに設定
+      if (!userId) {
+        setLiked(false);
+      } else {
+        setLiked(
+          likes.some((like: { userId: string }) => like.userId === userId)
+        );
+      }
     } catch (error) {
-      console.error("Error fetching likes:", error);
+      console.error("Error fetching comment likes:", error);
     }
-  }, [postId, userId]);
+  }, [commentId, userId]);
 
-  // 初期ロード時と userId が変更された時にデータを取得
+  // いいねボタン初期ロード
   useEffect(() => {
     fetchLikes();
   }, [fetchLikes]);
 
   // いいねボタン押下時
   const handleLike = async () => {
+    // 認証されていない場合は何もしない
+    if (!userId) {
+      console.warn("User not authenticated, cannot like");
+      return;
+    }
+
     if (loading) return; // 連続クリック防止
 
     setLoading(true);
@@ -50,7 +60,7 @@ export default function LikeButton({ postId, userId }: LikeButtonProps) {
       if (liked) {
         // いいねを削除
         const res = await fetch(
-          `/api/post-likes?postId=${postId}&userId=${userId}`,
+          `/api/comment-likes?commentId=${commentId}&userId=${userId}`,
           {
             method: "DELETE",
           }
@@ -62,10 +72,10 @@ export default function LikeButton({ postId, userId }: LikeButtonProps) {
         }
       } else {
         // いいねを追加
-        const res = await fetch(`/api/post-likes`, {
+        const res = await fetch(`/api/comment-likes`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ postId: postId, userId: userId }),
+          body: JSON.stringify({ commentId: commentId, userId: userId }),
         });
 
         if (res.ok) {
@@ -74,7 +84,7 @@ export default function LikeButton({ postId, userId }: LikeButtonProps) {
         }
       }
     } catch (error) {
-      console.error("Error handling like:", error);
+      console.error("Error handling comment like:", error);
       // エラー時は最新データを再取得
       fetchLikes();
     } finally {
@@ -93,10 +103,10 @@ export default function LikeButton({ postId, userId }: LikeButtonProps) {
             : "text-gray-500 hover:text-blue-500 hover:bg-gray-50"
         }`}
       >
-        {liked ? <LikedIcon /> : <LikeIcon />}
+        {liked ? <LikedIcon /> : <LikeIcon />}{" "}
         <span
-          className={`ms-1 font-medium ${
-            liked ? "text-blue-600" : "text-gray-500"
+          className={`font-medium ${
+            liked ? "text-blue-600 ms-1" : "text-gray-500 ms-1"
           }`}
         >
           {likeCount}
