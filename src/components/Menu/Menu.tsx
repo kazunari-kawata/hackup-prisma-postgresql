@@ -36,26 +36,10 @@ export default function Header() {
             </li>
             <li>
               <Link
-                href="/"
-                className="hover:text-gray-300 text-2xl px-8 py-4 block"
-              >
-                Post
-              </Link>
-            </li>
-            <li>
-              <Link
                 href="/login"
                 className="hover:text-gray-300 text-2xl px-8 py-4 block"
               >
                 Login
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/register"
-                className="hover:text-gray-300 text-2xl px-8 py-4 block"
-              >
-                Register
               </Link>
             </li>
           </ul>

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
 /**
- * すべての投稿への投票（GOOD/BAD）を取得する関数
+ * すべての投稿への投票（UP/DOWN）を取得する関数
  * 投稿に対して誰がどんな投票をしたかの全データを配列で返します。
  * 例：管理画面や集計などで利用できます。
  */
@@ -12,7 +12,7 @@ export async function getPostVotes(postId: number) {
       id: true, // 投票のID
       postId: true, // どの投稿への投票か
       userId: true, // どのユーザーが投票したか
-      voteType: true, // GOODかBADか
+      voteType: true, // UPかDOWNか
       createdAt: true, // 投票した日時
     },
     orderBy: {
@@ -40,14 +40,14 @@ export async function getPostVoteById(postId: number, userId: string) {
 }
 
 /**
- * 投稿に投票（GOOD/BAD）を新規作成する関数
- * @param data postId: 投票する投稿のID, userId: 投票したユーザーのID, voteType: "GOOD"または"BAD"
- * 例：ユーザーが投稿にGOOD/BADボタンを押したときに呼び出します。
+ * 投稿に投票（UP/DOWN）を新規作成する関数
+ * @param data postId: 投票する投稿のID, userId: 投票したユーザーのID, voteType: "UP"または"DOWN"
+ * 例：ユーザーが投稿にUP/DOWNボタンを押したときに呼び出します。
  */
 export async function createPostVote(data: {
   postId: number;
   userId: string;
-  voteType: "GOOD" | "BAD";
+  voteType: "UP" | "DOWN";
 }) {
   return await prisma.postVote.create({
     data: {

@@ -6,16 +6,16 @@ import { mdiHeart } from "@mdi/js";
 export function LikeIcon() {
   return (
     <div>
-      <Icon path={mdiHeartOutline} size={1} />
+      <Icon path={mdiHeartOutline} size={1} color="currentColor" />
     </div>
-  )
+  );
 }
 
 // ライク後のアイコン
 export function LikedIcon() {
   return (
     <div>
-      <Icon path={mdiHeart} size={1} />
+      <Icon path={mdiHeart} size={1} color="currentColor" />
     </div>
-  )
+  );
 }

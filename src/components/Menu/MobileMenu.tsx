@@ -67,26 +67,10 @@ export default function MobileMenu() {
             </li>
             <li>
               <Link
-                href="/"
-                className="block px-2 py-2 hover:bg-gray-700 rounded-md"
-              >
-                Post
-              </Link>
-            </li>
-            <li>
-              <Link
                 href="/login"
                 className="block px-2 py-2 hover:bg-gray-700 rounded-md"
               >
                 Login
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/register"
-                className="block px-2 py-2 hover:bg-gray-700 rounded-md"
-              >
-                Register
               </Link>
             </li>
           </ul>

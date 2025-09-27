@@ -1,6 +1,8 @@
 // CommentList.tsx
 import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import DeleteButton from "./DeleteButton";
+import CommentReaction from "../Reaction/CommentReaction";
 
 type Comment = {
   id: number;
@@ -8,6 +10,12 @@ type Comment = {
   userId: string;
   content: string;
   createdAt: string;
+  user: {
+    id: string;
+    username: string | null;
+    email: string | null;
+    iconUrl: string | null;
+  };
 };
 type GetCommentListProps = {
   postId: number;
@@ -50,28 +58,56 @@ export default function GetCommentList({
     <ul className="space-y-4">
       {comments.map((comment) => (
         <li key={comment.id}>
-          <div className="relative bg-white rounded-xl shadow-md border border-gray-200 p-4 hover:shadow-lg transition-shadow">
-            {/* 削除ボタンを右上に */}
-            {comment.userId === currentuserId && (
-              <div className="absolute top-2 right-2">
-                <DeleteButton commentId={comment.id} onDelete={fetchComments} />
+          <div className="bg-white rounded-xl shadow-md border border-gray-200 p-4 hover:shadow-lg transition-shadow">
+            {/* ヘッダー部分：ユーザー情報と削除ボタンを横並び */}
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex items-center gap-2 flex-1">
+                {comment.user.iconUrl ? (
+                  <Image
+                    src={comment.user.iconUrl}
+                    alt={`${
+                      comment.user.username || "ユーザー"
+                    }のプロフィール画像`}
+                    width={32}
+                    height={32}
+                    className="w-8 h-8 rounded-full object-cover"
+                    unoptimized={true}
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 flex items-center justify-center text-xs text-white font-bold">
+                    {comment.user.username
+                      ? comment.user.username.slice(0, 2).toUpperCase()
+                      : comment.user.email?.slice(0, 2).toUpperCase() || "U"}
+                  </div>
+                )}
+                <div className="flex flex-col">
+                  <span className="font-semibold text-gray-800 text-sm">
+                    {comment.user.username ||
+                      comment.user.email?.split("@")[0] ||
+                      "ユーザー"}
+                  </span>
+                  <span className="text-gray-400 text-xs">
+                    {new Date(comment.createdAt).toLocaleString("ja-JP", {
+                      timeZone: "Asia/Tokyo",
+                    })}
+                  </span>
+                </div>
               </div>
-            )}
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs text-gray-600 font-bold">
-                {comment.userId.slice(0, 2).toUpperCase()}
-              </div>
-              <span className="font-semibold text-gray-800 text-sm">
-                {comment.userId}
-              </span>
-              <span className="text-gray-400 text-xs ml-2">
-                {new Date(comment.createdAt).toLocaleString("ja-JP", {
-                  timeZone: "Asia/Tokyo",
-                })}
-              </span>
+              {/* 削除ボタンを右側に配置 */}
+              {comment.userId === currentuserId && (
+                <div className="flex-shrink-0 ml-2">
+                  <DeleteButton
+                    commentId={comment.id}
+                    onDelete={fetchComments}
+                  />
+                </div>
+              )}
             </div>
-            <div className="text-gray-700 leading-relaxed whitespace-pre-line">
+            <div className="text-gray-700 leading-relaxed whitespace-pre-line ml-10">
               {comment.content}
+            </div>
+            <div className="flex mt-2 justify-center items-center">
+              <CommentReaction commentId={comment.id} userId={currentuserId} />
             </div>
           </div>
         </li>

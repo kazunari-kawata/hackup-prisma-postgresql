@@ -13,7 +13,7 @@ model User {
   id           String   @id             // Firebase uid
   email        String?  @unique         // プロバイダによっては null あり得る
   username     String?                   // GoogleのdisplayNameを初期値に
-  iconUrl      String?                   // GoogleのphotoURLを初期値に  iconUrl      String?
+  iconUrl      String?                   // GoogleのphotoURLを初期値に
   karmaScore   Int @default(0)
 
   posts        Post[]

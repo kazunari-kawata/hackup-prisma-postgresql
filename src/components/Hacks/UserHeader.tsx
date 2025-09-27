@@ -1,5 +1,6 @@
-// 必要に応じて、ユーザー情報の型定義をここに追加するか、共通の型定義ファイルからインポートします。
-// 例: type User = { id: string; name: string; avatarUrl: string; };
+"use client";
+
+import Image from "next/image";
 
 type UserHeaderProps = {
   userName: string;
@@ -14,16 +15,17 @@ export default function UserHeader({
 }: UserHeaderProps) {
   return (
     <div className="flex items-center space-x-2 mb-2">
-        {/* ユーザーの情報をフェッチしてくるように後から修正が必要 */}
       {userAvatarUrl ? (
-        <img
+        <Image
           src={userAvatarUrl}
           alt={`${userName}'s avatar`}
+          width={32}
+          height={32}
           className="w-8 h-8 rounded-full"
         />
       ) : (
         // アバター画像がない場合のプレースホルダー
-        <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs text-gray-600">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold text-xs">
           {userName.charAt(0)}
         </div>
       )}
