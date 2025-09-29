@@ -32,6 +32,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!FbAuth) {
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(
       FbAuth,
       (firebaseUser: User | null) => {
@@ -54,7 +59,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      await FbAuth.signOut();
+      if (FbAuth) {
+        await FbAuth.signOut();
+      }
     } catch (error) {
       console.error("Sign out error:", error);
     }

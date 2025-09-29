@@ -13,6 +13,10 @@ export default function LoginForm() {
   const handleGoogleLogin = async () => {
     setError(null);
     try {
+      if (!FbAuth) {
+        throw new Error("Firebase Auth is not initialized");
+      }
+
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(FbAuth, provider);
 
