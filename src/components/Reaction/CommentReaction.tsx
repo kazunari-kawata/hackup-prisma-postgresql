@@ -1,0 +1,26 @@
+"use client";
+
+import CommentLikeButton from "./CommentLikeButton";
+import CommentVoteButtons from "./CommentVoteButtons";
+
+type CommentReactionProps = {
+  commentId: number;
+  userId: string;
+};
+
+export default function CommentReaction({
+  commentId,
+  userId,
+}: CommentReactionProps) {
+  return (
+    <div>
+      <div className="text-xs text-gray-400 mb-2 hidden">
+        Comment ID: {commentId}
+      </div>
+      <ul className="md:text-xs flex space-x-4 gap-4">
+        <CommentLikeButton commentId={commentId} userId={userId} />
+        <CommentVoteButtons commentId={commentId} userId={userId} />
+      </ul>
+    </div>
+  );
+}
