@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { PostSchema } from "@/validations/contact";
 import { prisma } from "@/lib/prisma";
-import { PostLike, PostVote } from "@/generated/prisma";
+import { PostLike, PostVote } from "@prisma/client";
 import { validateAuthenticatedUser } from "@/lib/auth/serverAuth";
 
 // ActionStateの型定義
