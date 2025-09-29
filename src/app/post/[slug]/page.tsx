@@ -6,7 +6,8 @@ import type { Metadata } from "next";
 async function getPost(slug: string) {
   return {
     title: "Sample Title",
-    content: "Sample content for the post. Replace this with actual fetched content.",
+    content:
+      "Sample content for the post. Replace this with actual fetched content.",
   };
 }
 
@@ -34,7 +35,11 @@ export async function generateMetadata({
   };
 }
 
-export default async function page({ params }: { params: Promise<{ slug: string }> }) {
+export default async function page({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const { slug } = await params;
   console.log({ slug });
   return <div>投稿slug: {slug}</div>;
