@@ -18,6 +18,8 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      "src/generated/**", // Prisma生成ファイルを除外
+      "prisma/migrations/**", // Prismaマイグレーションファイルを除外
     ],
   },
 ];
