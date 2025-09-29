@@ -13,9 +13,10 @@ async function getPost(slug: string) {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const post = await getPost(params.slug);
+  const { slug } = await params;
+  const post = await getPost(slug);
 
   if (!post) {
     return {
@@ -33,8 +34,8 @@ export async function generateMetadata({
   };
 }
 
-export default async function page({ params }: { params: { slug: string } }) {
-  console.log(params);
+export default async function page({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  console.log({ slug });
   return <div>投稿slug: {slug}</div>;
 }

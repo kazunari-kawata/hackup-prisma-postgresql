@@ -1,5 +1,5 @@
 // import 'server-only';
-import { PrismaClient } from "../generated/prisma";
+import { PrismaClient } from "@prisma/client";
 
 // グローバルにPrismaClientを保持するためのオブジェクト
 const globalForPrisma = globalThis as unknown as {
