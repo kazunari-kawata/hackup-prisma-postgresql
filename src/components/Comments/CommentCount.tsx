@@ -19,9 +19,18 @@ export default function CommentCount({
   // コメント数をAPIから取得する場合のロジック
   useEffect(() => {
     const fetchComments = async () => {
-      const res = await fetch(`/api/comments?postId=${postId}`);
-      const comments = await res.json();
-      setCommentCount(comments.length);
+      try {
+        const res = await fetch(`/api/comments?postId=${postId}`);
+        if (res.ok) {
+          const comments = await res.json();
+          setCommentCount(Array.isArray(comments) ? comments.length : 0);
+        } else {
+          setCommentCount(0);
+        }
+      } catch (error) {
+        console.error("コメント数の取得に失敗:", error);
+        setCommentCount(0);
+      }
     };
     fetchComments();
   }, [postId, refreshTrigger]); // refreshTrigger を依存配列に追加
