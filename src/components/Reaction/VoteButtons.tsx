@@ -119,7 +119,7 @@ export default function VoteButtons({
         <button
           onClick={() => canVote && handleVote("UP")}
           disabled={!canVote}
-          className={`flex items-center gap-1 ${
+          className={`flex items-center gap-1 px-2 py-1 ${
             !canVote ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >
@@ -145,7 +145,7 @@ export default function VoteButtons({
         <button
           onClick={() => canVote && handleVote("DOWN")}
           disabled={!canVote}
-          className={`flex items-center gap-1 ${
+          className={`flex items-center gap-1 px-2 py-1 ${
             !canVote ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >

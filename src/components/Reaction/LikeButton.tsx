@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { LikeIcon, LikedIcon } from "./Icons/Likes";
+import { BookmarkOutlinedIcon, BookmarkFilledIcon } from "./Icons/Bookmark";
 
 type LikeButtonProps = {
   postId: number;
@@ -9,27 +9,27 @@ type LikeButtonProps = {
 };
 
 export default function LikeButton({ postId, userId }: LikeButtonProps) {
-  const [likeCount, setLikeCount] = useState(0);
-  const [liked, setLiked] = useState(false);
+  const [saveCount, setSaveCount] = useState(0);
+  const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // いいねデータを取得する関数
-  const fetchLikes = useCallback(async () => {
+  // 保存データを取得する関数
+  const fetchSaves = useCallback(async () => {
     try {
       const res = await fetch(`/api/post-likes?postId=${postId}`);
       if (!res.ok) {
         throw new Error("Failed to fetch likes");
       }
-      const likes = await res.json();
+      const saves = await res.json();
 
-      // 全体のいいね数を設定（すべてのユーザーのいいねの合計）
-      setLikeCount(likes.length);
+      // 全体の保存数を設定（すべてのユーザーの保存の合計）
+      setSaveCount(saves.length);
 
-      // 現在のユーザーがいいねしているかをチェック
-      const currentUserLiked = likes.some(
-        (like: { userId: string }) => like.userId === userId
+      // 現在のユーザーが保存しているかをチェック
+      const currentUserSaved = saves.some(
+        (save: { userId: string }) => save.userId === userId
       );
-      setLiked(currentUserLiked);
+      setSaved(currentUserSaved);
     } catch (error) {
       console.error("Error fetching likes:", error);
     }
@@ -37,18 +37,18 @@ export default function LikeButton({ postId, userId }: LikeButtonProps) {
 
   // 初期ロード時と userId が変更された時にデータを取得
   useEffect(() => {
-    fetchLikes();
-  }, [fetchLikes]);
+    fetchSaves();
+  }, [fetchSaves]);
 
-  // いいねボタン押下時
-  const handleLike = async () => {
+  // 保存ボタン押下時
+  const handleSave = async () => {
     if (loading) return; // 連続クリック防止
 
     setLoading(true);
 
     try {
-      if (liked) {
-        // いいねを削除
+      if (saved) {
+        // 保存を削除
         const res = await fetch(
           `/api/post-likes?postId=${postId}&userId=${userId}`,
           {
@@ -57,11 +57,11 @@ export default function LikeButton({ postId, userId }: LikeButtonProps) {
         );
 
         if (res.ok) {
-          setLikeCount((c) => c - 1);
-          setLiked(false);
+          setSaveCount((c) => c - 1);
+          setSaved(false);
         }
       } else {
-        // いいねを追加
+        // 保存を追加
         const res = await fetch(`/api/post-likes`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -69,14 +69,14 @@ export default function LikeButton({ postId, userId }: LikeButtonProps) {
         });
 
         if (res.ok) {
-          setLikeCount((c) => c + 1);
-          setLiked(true);
+          setSaveCount((c) => c + 1);
+          setSaved(true);
         }
       }
     } catch (error) {
-      console.error("Error handling like:", error);
+      console.error("Error handling save:", error);
       // エラー時は最新データを再取得
-      fetchLikes();
+      fetchSaves();
     } finally {
       setLoading(false);
     }
@@ -85,21 +85,21 @@ export default function LikeButton({ postId, userId }: LikeButtonProps) {
   return (
     <li>
       <button
-        onClick={handleLike}
+        onClick={handleSave}
         disabled={loading}
-        className={`flex items-center gap-1 px-2 py-1 rounded-md transition-all duration-200 disabled:opacity-50 ${
-          liked
+        className={`flex items-center justify-center gap-1 px-2 py-1 rounded-md transition-all duration-200 disabled:opacity-50 ${
+          saved
             ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
             : "text-gray-500 hover:text-blue-500 hover:bg-gray-50"
         }`}
       >
-        {liked ? <LikedIcon /> : <LikeIcon />}
+        {saved ? <BookmarkFilledIcon /> : <BookmarkOutlinedIcon />}
         <span
           className={`ms-1 font-medium ${
-            liked ? "text-blue-600" : "text-gray-500"
+            saved ? "text-blue-600" : "text-gray-500"
           }`}
         >
-          {likeCount}
+          {saveCount > 0 ? saveCount : ""}
         </span>
         {loading && (
           <div className="ml-1 animate-spin rounded-full h-3 w-3 border-b border-current"></div>
