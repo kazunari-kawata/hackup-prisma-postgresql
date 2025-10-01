@@ -4,39 +4,35 @@ import Image from "next/image";
 import { useState } from "react";
 import { useAuth } from "@/lib/auth/AuthContext";
 import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
 
-type UserHeaderProps = {
+type CommentHeaderProps = {
   userName: string;
   userAvatarUrl?: string;
   timestamp?: string;
-  postId?: number;
+  commentId?: number;
   authorUid?: string;
-  onEdit?: () => void;
   onDelete?: () => void;
 };
 
-export default function UserHeader({
+export default function CommentHeader({
   userName,
   userAvatarUrl,
   timestamp,
-  postId,
+  commentId,
   authorUid,
-  onEdit,
   onDelete,
-}: UserHeaderProps) {
+}: CommentHeaderProps) {
   const { user } = useAuth();
   const [isDeleting, setIsDeleting] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // 投稿者本人かどうかをチェック
-  // FirebaseのユーザーのuidとデータベースのUser.idを比較
+  // コメント投稿者本人かどうかをチェック
   const isAuthor = user && authorUid && user.uid === authorUid;
 
   const handleDelete = async () => {
     if (
-      !confirm("この投稿を削除しますか？この操作は取り消せません。") ||
-      !postId
+      !confirm("このコメントを削除しますか？この操作は取り消せません。") ||
+      !commentId
     ) {
       return;
     }
@@ -44,14 +40,8 @@ export default function UserHeader({
     setIsDeleting(true);
     setIsMenuOpen(false);
     try {
-      const response = await fetch(`/api/posts/${postId}`, {
+      const response = await fetch(`/api/comments?id=${commentId}`, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: user?.uid,
-        }),
       });
 
       if (!response.ok) {
@@ -60,7 +50,6 @@ export default function UserHeader({
       }
 
       onDelete?.();
-      window.location.reload();
     } catch (error) {
       console.error("削除エラー:", error);
       alert(error instanceof Error ? error.message : "削除に失敗しました");
@@ -69,42 +58,37 @@ export default function UserHeader({
     }
   };
 
-  const handleEdit = () => {
-    setIsMenuOpen(false);
-    onEdit?.();
-  };
-
   return (
     <div className="flex items-center space-x-2 mb-2">
       {userAvatarUrl ? (
         <Image
           src={userAvatarUrl}
           alt={`${userName}'s avatar`}
-          width={32}
-          height={32}
-          className="w-8 h-8 rounded-full"
+          width={24}
+          height={24}
+          className="w-6 h-6 rounded-full"
         />
       ) : (
-        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold text-xs">
+        <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold text-xs">
           {userName.charAt(0)}
         </div>
       )}
       <div className="flex items-center gap-2">
-        <span className="font-semibold text-gray-900">{userName}</span>
+        <span className="font-medium text-gray-800 text-sm">{userName}</span>
         {timestamp && (
-          <span className="text-gray-500 text-sm">・ {timestamp}</span>
+          <span className="text-gray-500 text-xs">・ {timestamp}</span>
         )}
 
-        {/* 投稿者本人のみ表示される三点リーダーメニュー */}
+        {/* コメント投稿者本人のみ表示される三点リーダーメニュー */}
         {isAuthor && (
           <div className="relative">
             {/* 三点リーダーボタン */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors ml-2"
+              className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors ml-1"
               disabled={isDeleting}
             >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
                 <path d="M10 4a2 2 0 100-4 2 2 0 000 4z" />
                 <path d="M10 20a2 2 0 100-4 2 2 0 000 4z" />
@@ -118,20 +102,13 @@ export default function UserHeader({
                   className="fixed inset-0 z-10"
                   onClick={() => setIsMenuOpen(false)}
                 />
-                <div className="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-200 rounded-md shadow-lg z-20">
-                  <button
-                    onClick={handleEdit}
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                  >
-                    <EditIcon sx={{ fontSize: 16 }} />
-                    編集
-                  </button>
+                <div className="absolute right-0 top-full mt-1 w-28 bg-white border border-gray-200 rounded-md shadow-lg z-20">
                   <button
                     onClick={handleDelete}
                     disabled={isDeleting}
-                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 disabled:opacity-50"
+                    className="w-full px-3 py-2 text-left text-xs text-red-600 hover:bg-red-50 flex items-center gap-2 disabled:opacity-50"
                   >
-                    <DeleteIcon sx={{ fontSize: 16 }} />
+                    <DeleteIcon sx={{ fontSize: 14 }} />
                     {isDeleting ? "削除中..." : "削除"}
                   </button>
                 </div>

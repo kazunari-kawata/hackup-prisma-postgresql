@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/auth/AuthContext";
 import AuthenticatedRightColumn from "./AuthenticatedRightColumn";
 import LeftColumn from "./LeftColumn";
+import ConditionalSearchBar from "@/components/conditional-search-bar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,17 +22,39 @@ export default function RootLayout({
     <html lang="ja">
       <body className={inter.className}>
         <AuthProvider>
-          <div className="md:grid md:grid-cols-[1fr_2fr] xl:grid-cols-[1fr_2fr_1fr] md:gap-5 md:min-h-screen">
-            {/* 左カラム */}
-            <div>
+          <div className="min-h-screen">
+            {/* モバイル: ヘッダーを上部に固定 */}
+            <div className="md:hidden">
               <LeftColumn />
             </div>
-            {/* md以下: ヘッダー直下に表示 */}
-            <AuthenticatedRightColumn className="block md:hidden w-full px-4 mt-4" />
-            {/* 中央カラム */}
-            <main>{children}</main>
-            {/* md以上: サイドカラムに表示 */}
-            <AuthenticatedRightColumn className="hidden md:block" />
+
+            {/* デスクトップ以上: フレックスレイアウト */}
+            <div className="hidden md:flex min-h-screen">
+              {/* 左カラム */}
+              <LeftColumn />
+
+              {/* メインコンテンツエリア */}
+              <div className="flex-1 ml-64 lg:ml-72">
+                <main className="p-4">
+                  <ConditionalSearchBar />
+                  {children}
+                </main>
+              </div>
+
+              {/* 右カラム */}
+              <AuthenticatedRightColumn className="w-64 flex-shrink-0" />
+            </div>
+
+            {/* モバイル: メインコンテンツ */}
+            <div className="md:hidden">
+              {/* md以下: ヘッダー直下に表示 */}
+              <AuthenticatedRightColumn className="w-full px-4 mt-4" />
+
+              <main className="p-4">
+                <ConditionalSearchBar />
+                {children}
+              </main>
+            </div>
           </div>
         </AuthProvider>
       </body>

@@ -18,8 +18,8 @@ export default function CommentReaction({
         Comment ID: {commentId}
       </div>
       <ul className="md:text-xs flex space-x-4 gap-4">
-        <CommentLikeButton commentId={commentId} userId={userId} />
         <CommentVoteButtons commentId={commentId} userId={userId} />
+        <CommentLikeButton commentId={commentId} userId={userId} />
       </ul>
     </div>
   );

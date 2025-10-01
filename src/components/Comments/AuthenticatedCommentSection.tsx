@@ -7,16 +7,19 @@ import CommentList from "./GetCommentList";
 
 type AuthenticatedCommentSectionProps = {
   postId: number;
+  onCommentChange?: () => void;
 };
 
 export default function AuthenticatedCommentSection({
   postId,
+  onCommentChange,
 }: AuthenticatedCommentSectionProps) {
   const { user, isAuthenticated } = useAuthState();
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleCommentCreated = () => {
     setRefreshKey((prev) => prev + 1);
+    onCommentChange?.(); // 親コンポーネントに通知
   };
 
   if (!isAuthenticated || !user) {

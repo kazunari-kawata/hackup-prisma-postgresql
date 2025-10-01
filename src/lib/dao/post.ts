@@ -100,6 +100,7 @@ export async function getPosts() {
       createdAt: true,
       user: {
         select: {
+          id: true,
           username: true,
           iconUrl: true,
         },
@@ -124,6 +125,7 @@ export type Post = {
   content: string;
   createdAt: Date;
   user?: {
+    id: string;
     username: string | null;
     iconUrl: string | null;
   };
