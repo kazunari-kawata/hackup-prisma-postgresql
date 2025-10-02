@@ -14,7 +14,25 @@ export default function UserProfileSection({
   userId,
   userPhotoURL,
 }: UserProfileSectionProps) {
-  const [karmaScore, setKarmaScore] = useState<number>(0);
+  const [karmaData, setKarmaData] = useState<{
+    karmaScore: number;
+    details?: {
+      totalKarma: number;
+      postKarma: number;
+      commentKarma: number;
+      breakdown: {
+        postUpVotes: number;
+        postDownVotes: number;
+        commentUpVotes: number;
+        commentDownVotes: number;
+      };
+    };
+    formatted?: {
+      display: string;
+      color: string;
+      emoji: string;
+    };
+  }>({ karmaScore: 0 });
   const [loading, setLoading] = useState<boolean>(true);
 
   // カルマスコアを取得
@@ -22,10 +40,12 @@ export default function UserProfileSection({
     const fetchKarmaScore = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`/api/karma-score?userId=${userId}`);
+        const res = await fetch(
+          `/api/karma-score?userId=${userId}&detailed=true`
+        );
         if (res.ok) {
           const data = await res.json();
-          setKarmaScore(data.karmaScore);
+          setKarmaData(data);
         } else {
           console.error("Failed to fetch karma score");
         }
@@ -76,7 +96,9 @@ export default function UserProfileSection({
           ) : (
             <>
               <span className="text-3xl font-bold text-blue-600">
-                {karmaScore}
+                <span className={karmaData.formatted?.color || "text-gray-600"}>
+                  {karmaData.formatted?.display || karmaData.karmaScore}
+                </span>
               </span>
               <span className="text-sm text-gray-400">pts</span>
             </>
