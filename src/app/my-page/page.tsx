@@ -19,9 +19,27 @@ type SavedPost = {
   };
 };
 
+type SavedComment = {
+  id: number;
+  content: string;
+  createdAt: string;
+  savedAt: string;
+  user: {
+    id: string;
+    username: string;
+    iconUrl: string;
+  };
+  post: {
+    id: number;
+    title: string;
+  };
+};
+
 export default function MyPage() {
   const { user, isAuthenticated } = useAuthState();
   const [savedPosts, setSavedPosts] = useState<SavedPost[]>([]);
+  const [savedComments, setSavedComments] = useState<SavedComment[]>([]);
+  const [activeTab, setActiveTab] = useState<"posts" | "comments">("posts");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,13 +63,35 @@ export default function MyPage() {
         setError(
           err instanceof Error ? err.message : "不明なエラーが発生しました"
         );
-      } finally {
-        setLoading(false);
       }
     };
 
-    fetchSavedPosts();
-  }, [user, isAuthenticated]);
+    const fetchSavedComments = async () => {
+      try {
+        const response = await fetch(
+          `/api/my-saved-comments?userId=${user.uid}`
+        );
+        if (!response.ok) {
+          throw new Error("保存されたコメントの取得に失敗しました");
+        }
+        const comments = await response.json();
+        setSavedComments(comments);
+        setError(null);
+      } catch (err) {
+        console.error("保存されたコメントの取得に失敗:", err);
+        setError(
+          err instanceof Error ? err.message : "不明なエラーが発生しました"
+        );
+      }
+    };
+
+    const fetchData = async () => {
+      await Promise.all([fetchSavedPosts(), fetchSavedComments()]);
+      setLoading(false);
+    };
+
+    fetchData();
+  }, [isAuthenticated, user]);
 
   const handleUnsave = async (postId: number) => {
     if (!user) return;
@@ -65,13 +105,37 @@ export default function MyPage() {
       );
 
       if (response.ok) {
-        setSavedPosts((posts) => posts.filter((p) => p.id !== postId));
+        setSavedPosts((prev) => prev.filter((post) => post.id !== postId));
       } else {
         throw new Error("保存解除に失敗しました");
       }
     } catch (err) {
-      console.error("保存解除に失敗:", err);
-      alert(err instanceof Error ? err.message : "保存解除に失敗しました");
+      console.error("保存解除エラー:", err);
+      alert("保存解除に失敗しました");
+    }
+  };
+
+  const handleUnsaveComment = async (commentId: number) => {
+    if (!user) return;
+
+    try {
+      const response = await fetch(
+        `/api/comment-likes?commentId=${commentId}&userId=${user.uid}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (response.ok) {
+        setSavedComments((prev) =>
+          prev.filter((comment) => comment.id !== commentId)
+        );
+      } else {
+        throw new Error("コメントの保存解除に失敗しました");
+      }
+    } catch (err) {
+      console.error("コメント保存解除エラー:", err);
+      alert("コメントの保存解除に失敗しました");
     }
   };
 
@@ -147,120 +211,265 @@ export default function MyPage() {
         />
       )}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          保存された投稿
-        </h1>
-        <p className="text-gray-600">
-          あなたが保存した投稿一覧です（{savedPosts.length}件）
-        </p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">マイページ</h1>
+
+        {/* タブナビゲーション */}
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveTab("posts")}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === "posts"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            >
+              保存した投稿 ({savedPosts.length})
+            </button>
+            <button
+              onClick={() => setActiveTab("comments")}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === "comments"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            >
+              保存したコメント ({savedComments.length})
+            </button>
+          </nav>
+        </div>
       </div>
 
-      {savedPosts.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-            <svg
-              className="w-8 h-8 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-              />
-            </svg>
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            保存された投稿がありません
-          </h3>
-          <p className="text-gray-500 mb-6">
-            気になる投稿の保存ボタン（ブックマークアイコン）を押して、後で読み返せるように保存しましょう。
-          </p>
-          <Link
-            href="/"
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-          >
-            投稿を見る
-          </Link>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {savedPosts.map((post) => (
-            <div
-              key={post.id}
-              className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  {post.user.iconUrl ? (
-                    <Image
-                      src={post.user.iconUrl}
-                      alt={post.user.username || "User"}
-                      width={32}
-                      height={32}
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold text-xs">
-                      {post.user.username?.charAt(0) || "U"}
+      {/* 投稿タブの内容 */}
+      {activeTab === "posts" && (
+        <>
+          {savedPosts.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                <svg
+                  className="w-8 h-8 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                保存された投稿がありません
+              </h3>
+              <p className="text-gray-500 mb-6">
+                気になる投稿の保存ボタン（ブックマークアイコン）を押して、後で読み返せるように保存しましょう。
+              </p>
+              <Link
+                href="/"
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                投稿を見る
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {savedPosts.map((post) => (
+                <div
+                  key={post.id}
+                  className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      {post.user.iconUrl ? (
+                        <Image
+                          src={post.user.iconUrl}
+                          alt={post.user.username || "User"}
+                          width={32}
+                          height={32}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold text-xs">
+                          {post.user.username?.charAt(0) || "U"}
+                        </div>
+                      )}
+                      <div>
+                        <span className="font-medium text-gray-900">
+                          {post.user.username || "ユーザー"}
+                        </span>
+                        <div className="text-sm text-gray-500">
+                          投稿: {formatDate(post.createdAt)} • 保存:{" "}
+                          {formatDate(post.savedAt)}
+                        </div>
+                      </div>
                     </div>
-                  )}
-                  <div>
-                    <span className="font-medium text-gray-900">
-                      {post.user.username || "ユーザー"}
-                    </span>
-                    <div className="text-sm text-gray-500">
-                      投稿: {formatDate(post.createdAt)} • 保存:{" "}
-                      {formatDate(post.savedAt)}
-                    </div>
+
+                    <button
+                      onClick={() => handleUnsave(post.id)}
+                      className="text-red-600 hover:text-red-800 text-sm px-3 py-1 border border-red-300 rounded-md hover:bg-red-50 transition-colors"
+                    >
+                      保存解除
+                    </button>
+                  </div>
+
+                  <div className="mb-4">
+                    <h3 className="font-semibold text-xl text-gray-900 mb-2">
+                      {post.title}
+                    </h3>
+                    <p className="text-gray-700 line-clamp-3 leading-relaxed">
+                      {post.content.length > 200
+                        ? `${post.content.substring(0, 200)}...`
+                        : post.content}
+                    </p>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <Link
+                      href={`/posts/${post.id}`}
+                      className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
+                    >
+                      続きを読む
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </Link>
                   </div>
                 </div>
-
-                <button
-                  onClick={() => handleUnsave(post.id)}
-                  className="text-red-600 hover:text-red-800 text-sm px-3 py-1 border border-red-300 rounded-md hover:bg-red-50 transition-colors"
-                >
-                  保存解除
-                </button>
-              </div>
-
-              <div className="mb-4">
-                <h3 className="font-semibold text-xl text-gray-900 mb-2">
-                  {post.title}
-                </h3>
-                <p className="text-gray-700 line-clamp-3 leading-relaxed">
-                  {post.content.length > 200
-                    ? `${post.content.substring(0, 200)}...`
-                    : post.content}
-                </p>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <Link
-                  href={`/posts/${post.id}`}
-                  className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
-                >
-                  続きを読む
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </Link>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
+          )}
+        </>
+      )}
+
+      {/* コメントタブの内容 */}
+      {activeTab === "comments" && (
+        <>
+          {savedComments.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                <svg
+                  className="w-8 h-8 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                保存されたコメントがありません
+              </h3>
+              <p className="text-gray-500 mb-6">
+                気になるコメントの保存ボタン（ブックマークアイコン）を押して、後で読み返せるように保存しましょう。
+              </p>
+              <Link
+                href="/"
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                投稿を見る
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {savedComments.map((comment) => (
+                <div
+                  key={comment.id}
+                  className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      {comment.user.iconUrl ? (
+                        <Image
+                          src={comment.user.iconUrl}
+                          alt={comment.user.username || "User"}
+                          width={32}
+                          height={32}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-400 to-teal-500 flex items-center justify-center text-white font-bold text-xs">
+                          {comment.user.username?.charAt(0) || "U"}
+                        </div>
+                      )}
+                      <div>
+                        <span className="font-medium text-gray-900">
+                          {comment.user.username || "ユーザー"}
+                        </span>
+                        <div className="text-sm text-gray-500">
+                          コメント: {formatDate(comment.createdAt)} • 保存:{" "}
+                          {formatDate(comment.savedAt)}
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleUnsaveComment(comment.id)}
+                      className="text-red-600 hover:text-red-800 text-sm px-3 py-1 border border-red-300 rounded-md hover:bg-red-50 transition-colors"
+                    >
+                      保存解除
+                    </button>
+                  </div>
+
+                  <div className="mb-4">
+                    <p className="text-gray-700 line-clamp-3 leading-relaxed mb-2">
+                      {comment.content.length > 200
+                        ? `${comment.content.substring(0, 200)}...`
+                        : comment.content}
+                    </p>
+                    <div className="text-sm text-gray-500">
+                      投稿:{" "}
+                      <Link
+                        href={`/posts/${comment.post.id}`}
+                        className="text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        {comment.post.title}
+                      </Link>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <Link
+                      href={`/posts/${comment.post.id}#comment-${comment.id}`}
+                      className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
+                    >
+                      コメントを見る
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

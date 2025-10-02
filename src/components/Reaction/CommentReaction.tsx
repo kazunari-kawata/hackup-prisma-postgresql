@@ -1,6 +1,6 @@
 "use client";
 
-import CommentLikeButton from "./CommentLikeButton";
+import CommentBookmarkButton from "./CommentBookmarkButton";
 import CommentVoteButtons from "./CommentVoteButtons";
 
 type CommentReactionProps = {
@@ -19,7 +19,7 @@ export default function CommentReaction({
       </div>
       <ul className="md:text-xs flex space-x-4 gap-4">
         <CommentVoteButtons commentId={commentId} userId={userId} />
-        <CommentLikeButton commentId={commentId} userId={userId} />
+        <CommentBookmarkButton commentId={commentId} userId={userId} />
       </ul>
     </div>
   );
