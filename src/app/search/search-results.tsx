@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
+import { Bookmark, Comment } from "@mui/icons-material";
 
 interface SearchResult {
   id: number;
@@ -12,10 +13,12 @@ interface SearchResult {
   content: string;
   createdAt: string;
   user: {
-    name: string;
+    id: string;
+    username: string;
+    iconUrl?: string;
   };
   _count: {
-    postLikes: number;
+    likes: number;
     comments: number;
   };
 }
@@ -45,6 +48,10 @@ export default function SearchResults() {
         throw new Error("検索に失敗しました");
       }
       const data = await response.json();
+      console.log("Search API Response:", data);
+      if (data.posts && data.posts.length > 0) {
+        console.log("First post _count:", data.posts[0]._count);
+      }
       setResults(data.posts);
     } catch (err) {
       setError(err instanceof Error ? err.message : "エラーが発生しました");
@@ -106,10 +113,14 @@ export default function SearchResults() {
               </p>
 
               <div className="flex justify-between items-center text-sm text-gray-500">
-                <span>投稿者: {post.user.name}</span>
+                <span>投稿者: {post.user.username}</span>
                 <div className="flex gap-4">
-                  <span>💾 {post._count.postLikes}</span>
-                  <span>💬 {post._count.comments}</span>
+                  <span>
+                    <Bookmark /> {post._count.likes}
+                  </span>
+                  <span>
+                    <Comment /> {post._count.comments}
+                  </span>
                 </div>
               </div>
             </Link>
