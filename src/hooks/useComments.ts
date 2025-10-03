@@ -16,7 +16,7 @@ export type Comment = {
 };
 
 // コメント一覧取得
-export function useComments(postId: number) {
+export function useComments(postId: number, initialData?: unknown[]) {
   return useQuery<Comment[]>({
     queryKey: ["comments", postId],
     queryFn: async () => {
@@ -24,6 +24,7 @@ export function useComments(postId: number) {
       if (!res.ok) throw new Error("Failed to fetch comments");
       return res.json();
     },
+    initialData: initialData as Comment[] | undefined, // ISRで取得したデータを初期値として使用
     staleTime: 1 * 60 * 1000, // 1分間キャッシュ
     gcTime: 5 * 60 * 1000, // 5分間保持
   });

@@ -6,10 +6,12 @@ import OptimizedCommentList from "./OptimizedCommentList";
 
 type OptimizedCommentSectionProps = {
   postId: number;
+  initialComments?: unknown[];
 };
 
 export default function OptimizedCommentSection({
   postId,
+  initialComments,
 }: OptimizedCommentSectionProps) {
   const { user, isAuthenticated } = useAuthState();
 
@@ -28,7 +30,11 @@ export default function OptimizedCommentSection({
           </a>
         </div>
         {/* ログインしていなくてもコメントは閲覧可能 */}
-        <OptimizedCommentList postId={postId} currentUserId="" />
+        <OptimizedCommentList
+          postId={postId}
+          currentUserId=""
+          initialComments={initialComments}
+        />
       </div>
     );
   }
@@ -43,7 +49,11 @@ export default function OptimizedCommentSection({
         iconUrl={user.photoURL}
       />
       {/* React Query版のコメント一覧（自動キャッシュ・リアルタイム更新） */}
-      <OptimizedCommentList postId={postId} currentUserId={user.uid} />
+      <OptimizedCommentList
+        postId={postId}
+        currentUserId={user.uid}
+        initialComments={initialComments}
+      />
     </div>
   );
 }

@@ -7,13 +7,19 @@ import CommentReaction from "../Reaction/CommentReaction";
 type OptimizedCommentListProps = {
   postId: number;
   currentUserId: string;
+  initialComments?: unknown[];
 };
 
 export default function OptimizedCommentList({
   postId,
   currentUserId,
+  initialComments,
 }: OptimizedCommentListProps) {
-  const { data: comments, isLoading, error } = useComments(postId);
+  const {
+    data: comments,
+    isLoading,
+    error,
+  } = useComments(postId, initialComments);
   const deleteCommentMutation = useDeleteComment(postId);
 
   const handleDelete = async (commentId: number) => {

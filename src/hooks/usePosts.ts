@@ -6,11 +6,14 @@ import { PostWithStats, PostsWithStatsResponse } from "@/types/post";
 /**
  * 投稿一覧を取得するカスタムフック
  */
-export function usePosts(params?: {
-  limit?: number;
-  offset?: number;
-  userId?: string;
-}) {
+export function usePosts(
+  params?: {
+    limit?: number;
+    offset?: number;
+    userId?: string;
+  },
+  initialData?: PostsWithStatsResponse
+) {
   const { limit = 50, offset = 0, userId } = params || {};
 
   return useQuery<PostsWithStatsResponse>({
@@ -25,6 +28,7 @@ export function usePosts(params?: {
       }
       return response.json();
     },
+    initialData, // SSRで取得したデータを初期値として使用
     staleTime: 2 * 60 * 1000, // 2分間はキャッシュを使用
     gcTime: 5 * 60 * 1000, // 5分間メモリに保持
   });
