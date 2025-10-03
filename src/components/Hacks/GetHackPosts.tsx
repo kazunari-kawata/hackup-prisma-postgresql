@@ -1,7 +1,7 @@
 import { PostWithUser } from "@/lib/dao/post";
 import AuthenticatedReaction from "../Reaction/AuthenticatedReaction";
 import UserHeader from "./UserHeader";
-import AuthenticatedCommentSection from "../Comments/AuthenticatedCommentSection";
+import OptimizedCommentSection from "../Comments/OptimizedCommentSection";
 import HackTitleContent from "./HackTitleContent";
 import { EditPostModal } from "../editDeleteButtons/EditPostModal";
 import { useState } from "react";
@@ -36,7 +36,6 @@ type PostProps = {
 export default function Post({ post, showComments = true }: PostProps) {
   const [currentPost, setCurrentPost] = useState(post);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [commentRefreshTrigger, setCommentRefreshTrigger] = useState(0);
 
   const handleEdit = () => {
     setIsEditModalOpen(true);
@@ -87,21 +86,13 @@ export default function Post({ post, showComments = true }: PostProps) {
         )}
 
         <div className={"w-full mt-4 flex justify-center"}>
-          <AuthenticatedReaction
-            postId={currentPost.id}
-            commentRefreshTrigger={commentRefreshTrigger}
-          />
+          <AuthenticatedReaction postId={currentPost.id} />
         </div>
         {showComments && (
           <>
             <span className="border-t border-gray-300 block mt-8"></span>
             <div>
-              <AuthenticatedCommentSection
-                postId={currentPost.id}
-                onCommentChange={() =>
-                  setCommentRefreshTrigger((prev) => prev + 1)
-                }
-              />
+              <OptimizedCommentSection postId={currentPost.id} />
             </div>
           </>
         )}

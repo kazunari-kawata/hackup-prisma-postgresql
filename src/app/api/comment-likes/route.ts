@@ -7,10 +7,29 @@ import {
 
 // GET: コメントのいいね一覧を返す
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const commentId = Number(searchParams.get("commentId"));
-  const likes = await getCommentLikesByCommentId(commentId);
-  return NextResponse.json(likes);
+  try {
+    const { searchParams } = new URL(req.url);
+    const commentId = Number(searchParams.get("commentId"));
+
+    if (!commentId || isNaN(commentId)) {
+      return NextResponse.json(
+        { error: "Valid commentId is required" },
+        { status: 400 }
+      );
+    }
+
+    const likes = await getCommentLikesByCommentId(commentId);
+    return NextResponse.json(likes);
+  } catch (error) {
+    console.error("[Comment Likes API] Error fetching likes:", error);
+    return NextResponse.json(
+      {
+        error: "Failed to fetch comment likes",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
+  }
 }
 
 // POST: コメントにいいね追加

@@ -3,23 +3,43 @@ import { prisma } from "@/lib/prisma";
 
 // GET: 投票データを取得
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const commentId = searchParams.get("commentId");
-  if (!commentId) {
-    return NextResponse.json(
-      { error: "commentId is required" },
-      { status: 400 }
-    );
-  }
   try {
+    const { searchParams } = new URL(req.url);
+    const commentId = searchParams.get("commentId");
+
+    if (!commentId) {
+      return NextResponse.json(
+        { error: "commentId is required" },
+        { status: 400 }
+      );
+    }
+
+    const commentIdNum = Number(commentId);
+    if (isNaN(commentIdNum)) {
+      return NextResponse.json(
+        { error: "commentId must be a valid number" },
+        { status: 400 }
+      );
+    }
+
+    console.log(
+      "[Comment Votes API] Fetching votes for commentId:",
+      commentIdNum
+    );
+
     const votes = await prisma.commentVote.findMany({
-      where: { commentId: Number(commentId) },
+      where: { commentId: commentIdNum },
     });
+
+    console.log("[Comment Votes API] Found votes:", votes.length);
     return NextResponse.json(votes);
   } catch (error) {
-    console.error("GET Comment Votes Error:", error);
+    console.error("[Comment Votes API] Error fetching votes:", error);
     return NextResponse.json(
-      { error: "Failed to fetch votes" },
+      {
+        error: "Failed to fetch votes",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }
