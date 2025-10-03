@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth/AuthContext";
+import ReactQueryProvider from "@/providers/ReactQueryProvider";
 import AuthenticatedRightColumn from "./AuthenticatedRightColumn";
 import LeftColumn from "./LeftColumn";
 import ConditionalSearchBar from "@/components/conditional-search-bar";
@@ -21,42 +22,44 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body className={inter.className}>
-        <AuthProvider>
-          <div className="min-h-screen">
-            {/* モバイル: ヘッダーを上部に固定 */}
-            <div className="md:hidden">
-              <LeftColumn />
-            </div>
+        <ReactQueryProvider>
+          <AuthProvider>
+            <div className="min-h-screen">
+              {/* モバイル: ヘッダーを上部に固定 */}
+              <div className="md:hidden">
+                <LeftColumn />
+              </div>
 
-            {/* デスクトップ以上: フレックスレイアウト */}
-            <div className="hidden md:flex min-h-screen">
-              {/* 左カラム */}
-              <LeftColumn />
+              {/* デスクトップ以上: フレックスレイアウト */}
+              <div className="hidden md:flex min-h-screen">
+                {/* 左カラム */}
+                <LeftColumn />
 
-              {/* メインコンテンツエリア */}
-              <div className="flex-1 ml-64 lg:ml-72">
+                {/* メインコンテンツエリア */}
+                <div className="flex-1 ml-64 lg:ml-72">
+                  <main className="p-4">
+                    <ConditionalSearchBar />
+                    {children}
+                  </main>
+                </div>
+
+                {/* 右カラム */}
+                <AuthenticatedRightColumn className="w-64 flex-shrink-0" />
+              </div>
+
+              {/* モバイル: メインコンテンツ */}
+              <div className="md:hidden">
+                {/* md以下: ヘッダー直下に表示 */}
+                <AuthenticatedRightColumn className="w-full px-4 mt-4" />
+
                 <main className="p-4">
                   <ConditionalSearchBar />
                   {children}
                 </main>
               </div>
-
-              {/* 右カラム */}
-              <AuthenticatedRightColumn className="w-64 flex-shrink-0" />
             </div>
-
-            {/* モバイル: メインコンテンツ */}
-            <div className="md:hidden">
-              {/* md以下: ヘッダー直下に表示 */}
-              <AuthenticatedRightColumn className="w-full px-4 mt-4" />
-
-              <main className="p-4">
-                <ConditionalSearchBar />
-                {children}
-              </main>
-            </div>
-          </div>
-        </AuthProvider>
+          </AuthProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   );

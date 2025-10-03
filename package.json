@@ -18,6 +18,8 @@
     "@mui/icons-material": "^7.3.2",
     "@mui/material": "^7.3.2",
     "@prisma/client": "^6.16.1",
+    "@tanstack/react-query": "^5.90.2",
+    "@tanstack/react-query-devtools": "^5.90.2",
     "@types/firebase": "^2.4.32",
     "autoprefixer": "^10.4.21",
     "bcrypt": "^6.0.0",

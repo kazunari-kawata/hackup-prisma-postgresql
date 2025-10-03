@@ -35,6 +35,9 @@ model Post {
   likes     PostLike[]
   votes     PostVote[]
   comments  Comment[]
+
+  @@index([createdAt(sort: Desc)]) // 投稿一覧の並び替えを高速化
+  @@index([userId]) // ユーザーの投稿一覧を高速化
 }
 
 /// --- コメント関連 ---
@@ -49,6 +52,10 @@ model Comment {
   user      User      @relation(fields: [userId], references: [id])
   likes     CommentLike[]
   votes     CommentVote[]
+
+  @@index([postId]) // 投稿のコメント取得を高速化
+  @@index([userId]) // ユーザーのコメント一覧を高速化
+  @@index([createdAt(sort: Desc)]) // コメント並び替えを高速化
 }
 
 /// --- 投稿へのリアクション ---
@@ -62,6 +69,8 @@ model PostLike {
   user      User      @relation(fields: [userId], references: [id])
 
   @@unique([postId, userId])
+  @@index([postId]) // 投稿のいいね数取得を高速化
+  @@index([userId]) // ユーザーのいいね一覧を高速化
 }
 
 model PostVote {
@@ -75,6 +84,9 @@ model PostVote {
   user      User      @relation(fields: [userId], references: [id])
 
   @@unique([postId, userId])
+  @@index([postId]) // 投稿の投票数取得を高速化
+  @@index([userId]) // ユーザーの投票一覧を高速化
+  @@index([postId, voteType]) // 投票集計を高速化
 }
 
 /// --- コメントへのリアクション ---
@@ -88,6 +100,8 @@ model CommentLike {
   user      User      @relation(fields: [userId], references: [id])
 
   @@unique([commentId, userId])
+  @@index([commentId]) // コメントのいいね数取得を高速化
+  @@index([userId]) // ユーザーのいいね一覧を高速化
 }
 
 model CommentVote {
@@ -101,6 +115,9 @@ model CommentVote {
   user      User      @relation(fields: [userId], references: [id])
 
   @@unique([commentId, userId])
+  @@index([commentId]) // コメントの投票数取得を高速化
+  @@index([userId]) // ユーザーの投票一覧を高速化
+  @@index([commentId, voteType]) // 投票集計を高速化
 }
 
 /// --- 投票の種類を定義する列挙型 ---
