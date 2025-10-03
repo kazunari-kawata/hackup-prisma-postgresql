@@ -120,3 +120,4 @@ export async function GET(req: NextRequest) {
 // キャッシュ設定（Next.js 15対応）
 export const dynamic = "force-dynamic"; // 常に最新データを取得
 export const revalidate = 30; // 30秒ごとに再検証
+export const maxDuration = 10; // Vercel: 最大10秒

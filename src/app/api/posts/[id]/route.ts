@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getPostDetail } from "@/lib/dao/post";
 
+// Vercel設定
+export const maxDuration = 10; // 最大10秒
+
 // GET: 投稿詳細を取得（最適化版）
 export async function GET(
   req: NextRequest,
