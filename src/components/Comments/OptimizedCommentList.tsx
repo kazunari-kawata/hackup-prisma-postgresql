@@ -17,15 +17,22 @@ export default function OptimizedCommentList({
   const deleteCommentMutation = useDeleteComment(postId);
 
   const handleDelete = async (commentId: number) => {
-    if (!confirm("このコメントを削除しますか？")) return;
+    console.log(
+      "[OptimizedCommentList] Delete called for commentId:",
+      commentId
+    );
 
     deleteCommentMutation.mutate(commentId, {
       onError: (error) => {
+        console.error("[OptimizedCommentList] Delete error:", error);
         alert(
           error instanceof Error
             ? error.message
             : "コメントの削除に失敗しました"
         );
+      },
+      onSuccess: () => {
+        console.log("[OptimizedCommentList] Delete successful");
       },
     });
   };
