@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**", // Googleプロフィール画像のすべてのパスを許可
       },
+      {
+        protocol: "https",
+        hostname: "api.dicebear.com",
+        port: "",
+        pathname: "/**", // DiceBear API（アバター生成）
+      },
     ],
   },
 };

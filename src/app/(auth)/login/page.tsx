@@ -1,6 +1,5 @@
 import LoginForm from "@/components/auth/LoginForm";
 import ThumbsUpDown from "@/components/Menu/Icons/Logo";
-import Link from "next/link";
 
 export default function LoginPage() {
   return (

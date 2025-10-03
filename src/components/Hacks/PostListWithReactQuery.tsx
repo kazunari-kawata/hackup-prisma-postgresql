@@ -18,7 +18,7 @@ export default function PostListWithReactQuery({
   const [displayCount, setDisplayCount] = useState(initialPageSize);
 
   // React Queryでデータ取得（自動キャッシュ・再取得）
-  const { data, isLoading, error, isFetching } = usePosts({
+  const { data, isLoading, error } = usePosts({
     limit: 50,
     offset: 0,
     userId: user?.uid,
