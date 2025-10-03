@@ -18,7 +18,6 @@ export default function CommentHeader({
   userName,
   userAvatarUrl,
   timestamp,
-  commentId,
   authorUid,
   onDelete,
 }: CommentHeaderProps) {
