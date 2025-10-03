@@ -1,5 +1,37 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getPostDetail } from "@/lib/dao/post";
+
+// GET: 投稿詳細を取得（最適化版）
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const { searchParams } = req.nextUrl;
+    const userId = searchParams.get("userId") || undefined;
+
+    const postId = parseInt(id);
+    if (isNaN(postId)) {
+      return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
+    }
+
+    const post = await getPostDetail(postId, userId);
+
+    if (!post) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(post);
+  } catch (error) {
+    console.error("Error fetching post detail:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch post" },
+      { status: 500 }
+    );
+  }
+}
 
 // DELETE: 投稿削除
 export async function DELETE(
