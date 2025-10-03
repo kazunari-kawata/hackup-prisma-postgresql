@@ -39,8 +39,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const unsubscribe = onAuthStateChanged(
       FbAuth,
-      (firebaseUser: User | null) => {
+      async (firebaseUser: User | null) => {
         if (firebaseUser) {
+          // Firebase認証成功後、データベースにユーザーを登録/更新
+          try {
+            const response = await fetch("/api/auth/register", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                id: firebaseUser.uid,
+                email: firebaseUser.email,
+                username: firebaseUser.displayName,
+                iconUrl: firebaseUser.photoURL,
+              }),
+            });
+
+            if (!response.ok) {
+              console.error(
+                "Failed to register user in database:",
+                await response.text()
+              );
+            }
+          } catch (error) {
+            console.error("Error registering user:", error);
+          }
+
           setUser({
             uid: firebaseUser.uid,
             email: firebaseUser.email,

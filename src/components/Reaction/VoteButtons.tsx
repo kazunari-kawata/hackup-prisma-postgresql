@@ -39,12 +39,17 @@ export default function VoteButtons({
       setDownCount(
         votes.filter((v: { voteType: string }) => v.voteType === "DOWN").length
       );
-      const myVote = votes.find((v: { userId: string }) => v.userId === userId);
-      setVote(myVote?.voteType ?? null);
+      // 認証済みユーザーの場合のみ自分の投票を確認
+      if (userId) {
+        const myVote = votes.find(
+          (v: { userId: string }) => v.userId === userId
+        );
+        setVote(myVote?.voteType ?? null);
+      }
       setError(null);
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : "データの取得に失敗しました";
+        err instanceof Error ? err.message : "投票データの取得に失敗しました";
       setError(errorMessage);
       console.error("Fetch Votes Error:", err);
     }
@@ -52,8 +57,11 @@ export default function VoteButtons({
 
   // アゲサゲボタン初期ロード
   useEffect(() => {
-    fetchVotes();
-  }, [fetchVotes]);
+    // postIdが有効な場合のみ投票データを取得
+    if (postId) {
+      fetchVotes();
+    }
+  }, [postId, fetchVotes]);
 
   // アゲサゲボタン押下時
   const handleVote = async (type: "UP" | "DOWN") => {

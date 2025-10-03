@@ -1,0 +1,401 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>本番環境DB ビューアー</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .section { background: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .stat-card { background: white; padding: 15px; border-radius: 6px; text-align: center; }
+        .stat-number { font-size: 2em; font-weight: bold; color: #2563eb; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #e5e7eb; font-weight: 600; }
+        .japanese { color: #059669; font-weight: 500; }
+        .english { color: #dc2626; }
+        .title { font-size: 1.8em; margin-bottom: 20px; color: #1f2937; }
+        .refresh { position: fixed; top: 20px; right: 20px; }
+        .btn { background: #2563eb; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🌐 本番環境データベース ビューアー</h1>
+        <p><strong>接続方式:</strong> Prisma Accelerate (推奨)</p>
+        <p><strong>更新時刻:</strong> 2025/10/3 16:20:47</p>
+        
+        <div class="section">
+            <h2>📊 統計情報</h2>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number">21</div>
+                    <div>ユーザー</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">17</div>
+                    <div>投稿</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">10</div>
+                    <div>コメント</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">52</div>
+                    <div>いいね</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>👥 ユーザー一覧（最新10人）</h2>
+            <table>
+                <tr><th>ID</th><th>ユーザー名</th><th>メール</th><th>カルマ</th></tr>
+                
+                <tr>
+                    <td>user_10_1759473235293</td>
+                    <td>加藤みなみ</td>
+                    <td>user10@example.jp</td>
+                    <td>933</td>
+                </tr>
+                
+                <tr>
+                    <td>user_11_1759473235293</td>
+                    <td>吉田慎也</td>
+                    <td>user11@example.jp</td>
+                    <td>882</td>
+                </tr>
+                
+                <tr>
+                    <td>user_12_1759473235293</td>
+                    <td>山本ゆい</td>
+                    <td>user12@example.jp</td>
+                    <td>940</td>
+                </tr>
+                
+                <tr>
+                    <td>user_13_1759473235293</td>
+                    <td>松本拓也</td>
+                    <td>user13@example.jp</td>
+                    <td>496</td>
+                </tr>
+                
+                <tr>
+                    <td>user_14_1759473235294</td>
+                    <td>井上まり</td>
+                    <td>user14@example.jp</td>
+                    <td>577</td>
+                </tr>
+                
+                <tr>
+                    <td>user_15_1759473235294</td>
+                    <td>木村翔太</td>
+                    <td>user15@example.jp</td>
+                    <td>567</td>
+                </tr>
+                
+                <tr>
+                    <td>user_16_1759473235294</td>
+                    <td>林美優</td>
+                    <td>user16@example.jp</td>
+                    <td>376</td>
+                </tr>
+                
+                <tr>
+                    <td>user_17_1759473235294</td>
+                    <td>清水ひろき</td>
+                    <td>user17@example.jp</td>
+                    <td>528</td>
+                </tr>
+                
+                <tr>
+                    <td>user_18_1759473235294</td>
+                    <td>山崎えみ</td>
+                    <td>user18@example.jp</td>
+                    <td>486</td>
+                </tr>
+                
+                <tr>
+                    <td>user_19_1759473235295</td>
+                    <td>森田こうじ</td>
+                    <td>user19@example.jp</td>
+                    <td>121</td>
+                </tr>
+                
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>📝 投稿一覧</h2>
+            <table>
+                <tr><th>ID</th><th>タイトル</th><th>投稿者</th><th>言語</th><th>コメント</th><th>いいね</th><th>投票</th></tr>
+                
+                <tr>
+                    <td>46</td>
+                    <td class="japanese">アイスコーヒーの氷が薄まる問題は、前日の残りを凍らせる</td>
+                    <td>Kazunari Kawata</td>
+                    <td><span class="japanese">日本語</span></td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+                </tr>
+                
+                <tr>
+                    <td>45</td>
+                    <td class="japanese">マスクの耳ゴムが痛い時は、名札用クリップを使う</td>
+                    <td>Kazunari Kawata</td>
+                    <td><span class="japanese">日本語</span></td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+                </tr>
+                
+                <tr>
+                    <td>67</td>
+                    <td class="japanese">スマホ依存を防ぐデジタルデトックス術</td>
+                    <td>鈴木一郎</td>
+                    <td><span class="japanese">日本語</span></td>
+                    <td>0</td>
+                    <td>5</td>
+                    <td>2</td>
+                </tr>
+                
+                <tr>
+                    <td>76</td>
+                    <td class="japanese">睡眠の質を向上させる夜のルーティン</td>
+                    <td>清水ひろき</td>
+                    <td><span class="japanese">日本語</span></td>
+                    <td>3</td>
+                    <td>7</td>
+                    <td>5</td>
+                </tr>
+                
+                <tr>
+                    <td>74</td>
+                    <td class="japanese">料理の時短テクニック10選</td>
+                    <td>清水ひろき</td>
+                    <td><span class="japanese">日本語</span></td>
+                    <td>5</td>
+                    <td>6</td>
+                    <td>1</td>
+                </tr>
+                
+                <tr>
+                    <td>75</td>
+                    <td class="japanese">勉強効率を上げる環境作り</td>
+                    <td>鈴木一郎</td>
+                    <td><span class="japanese">日本語</span></td>
+                    <td>6</td>
+                    <td>1</td>
+                    <td>5</td>
+                </tr>
+                
+                <tr>
+                    <td>78</td>
+                    <td class="japanese">買い物で無駄遣いを防ぐテクニック</td>
+                    <td>渡辺健太</td>
+                    <td><span class="japanese">日本語</span></td>
+                    <td>5</td>
+                    <td>4</td>
+                    <td>1</td>
+                </tr>
+                
+                <tr>
+                    <td>66</td>
+                    <td class="japanese">在宅勤務で集中力を維持するコツ</td>
+                    <td>木村翔太</td>
+                    <td><span class="japanese">日本語</span></td>
+                    <td>3</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+                
+                <tr>
+                    <td>79</td>
+                    <td class="japanese">人間関係のストレスを減らすコミュニケーション術</td>
+                    <td>森田こうじ</td>
+                    <td><span class="japanese">日本語</span></td>
+                    <td>5</td>
+                    <td>1</td>
+                    <td>7</td>
+                </tr>
+                
+                <tr>
+                    <td>69</td>
+                    <td class="japanese">時間管理マトリクスで優先順位を決める</td>
+                    <td>佐藤花子</td>
+                    <td><span class="japanese">日本語</span></td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>3</td>
+                </tr>
+                
+                <tr>
+                    <td>68</td>
+                    <td class="japanese">効率的な読書法で知識を定着させる</td>
+                    <td>鈴木一郎</td>
+                    <td><span class="japanese">日本語</span></td>
+                    <td>0</td>
+                    <td>6</td>
+                    <td>5</td>
+                </tr>
+                
+                <tr>
+                    <td>65</td>
+                    <td class="japanese">朝の生産性を2倍にする5つの習慣</td>
+                    <td>井上まり</td>
+                    <td><span class="japanese">日本語</span></td>
+                    <td>6</td>
+                    <td>1</td>
+                    <td>1</td>
+                </tr>
+                
+                <tr>
+                    <td>71</td>
+                    <td class="japanese">記憶力を高める3つの科学的手法</td>
+                    <td>高橋美咲</td>
+                    <td><span class="japanese">日本語</span></td>
+                    <td>4</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+                
+                <tr>
+                    <td>73</td>
+                    <td class="japanese">運動習慣を継続させる小さな工夫</td>
+                    <td>佐藤花子</td>
+                    <td><span class="japanese">日本語</span></td>
+                    <td>6</td>
+                    <td>8</td>
+                    <td>1</td>
+                </tr>
+                
+                <tr>
+                    <td>77</td>
+                    <td class="japanese">メール処理を効率化する3つのルール</td>
+                    <td>清水ひろき</td>
+                    <td><span class="japanese">日本語</span></td>
+                    <td>3</td>
+                    <td>3</td>
+                    <td>6</td>
+                </tr>
+                
+                <tr>
+                    <td>72</td>
+                    <td class="japanese">ストレス解消に効果的な呼吸法</td>
+                    <td>吉田慎也</td>
+                    <td><span class="japanese">日本語</span></td>
+                    <td>0</td>
+                    <td>2</td>
+                    <td>2</td>
+                </tr>
+                
+                <tr>
+                    <td>70</td>
+                    <td class="japanese">5分でできる部屋の整理整頓術</td>
+                    <td>鈴木一郎</td>
+                    <td><span class="japanese">日本語</span></td>
+                    <td>2</td>
+                    <td>4</td>
+                    <td>2</td>
+                </tr>
+                
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>💬 最新コメント（10件）</h2>
+            <table>
+                <tr><th>ID</th><th>コメント</th><th>投稿者</th><th>投稿タイトル</th></tr>
+                
+                <tr>
+                    <td>286</td>
+                    <td>この考え方、目から鱗でした！新しい視点をもらえて嬉しいです。</td>
+                    <td>田中太郎</td>
+                    <td>人間関係のストレスを減らすコミュニケーション術...</td>
+                </tr>
+                
+                <tr>
+                    <td>282</td>
+                    <td>この考え方、目から鱗でした！新しい視点をもらえて嬉しいです。</td>
+                    <td>渡辺健太</td>
+                    <td>人間関係のストレスを減らすコミュニケーション術...</td>
+                </tr>
+                
+                <tr>
+                    <td>280</td>
+                    <td>この考え方、目から鱗でした！新しい視点をもらえて嬉しいです。</td>
+                    <td>鈴木一郎</td>
+                    <td>買い物で無駄遣いを防ぐテクニック...</td>
+                </tr>
+                
+                <tr>
+                    <td>281</td>
+                    <td>とても参考になりました。早速今日から始めてみます。</td>
+                    <td>山崎えみ</td>
+                    <td>買い物で無駄遣いを防ぐテクニック...</td>
+                </tr>
+                
+                <tr>
+                    <td>246</td>
+                    <td>詳細な説明をありがとうございます。とても分かりやすかったです。</td>
+                    <td>林美優</td>
+                    <td>在宅勤務で集中力を維持するコツ...</td>
+                </tr>
+                
+                <tr>
+                    <td>284</td>
+                    <td>私も似たような方法を実践していますが、この方法の方が良さそうです。</td>
+                    <td>林美優</td>
+                    <td>人間関係のストレスを減らすコミュニケーション術...</td>
+                </tr>
+                
+                <tr>
+                    <td>273</td>
+                    <td>この方法、以前から気になっていました。詳しく教えていただけますか？</td>
+                    <td>高橋美咲</td>
+                    <td>睡眠の質を向上させる夜のルーティン...</td>
+                </tr>
+                
+                <tr>
+                    <td>271</td>
+                    <td>とても参考になりました。早速今日から始めてみます。</td>
+                    <td>小林大輔</td>
+                    <td>睡眠の質を向上させる夜のルーティン...</td>
+                </tr>
+                
+                <tr>
+                    <td>272</td>
+                    <td>この考え方、目から鱗でした！新しい視点をもらえて嬉しいです。</td>
+                    <td>田中太郎</td>
+                    <td>睡眠の質を向上させる夜のルーティン...</td>
+                </tr>
+                
+                <tr>
+                    <td>256</td>
+                    <td>詳細な説明をありがとうございます。とても分かりやすかったです。</td>
+                    <td>吉田慎也</td>
+                    <td>運動習慣を継続させる小さな工夫...</td>
+                </tr>
+                
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>🔍 データ品質チェック</h2>
+            <p><strong>日本語投稿率:</strong> 100%</p>
+            <p><strong>期待値との比較:</strong></p>
+            <ul>
+                <li>ユーザー: 21/20 ⚠️</li>
+                <li>投稿: 17/15 ⚠️</li>
+                <li>日本語投稿: 17件</li>
+            </ul>
+        </div>
+    </div>
+    
+    <button class="btn refresh" onclick="location.reload()">🔄 更新</button>
+</body>
+</html>
