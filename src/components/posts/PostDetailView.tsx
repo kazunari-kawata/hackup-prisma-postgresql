@@ -9,7 +9,9 @@ import { EditPostModal } from "@/components/editDeleteButtons/EditPostModal";
 import { useState } from "react";
 
 type PostDetailViewProps = {
-  post: PostWithUser;
+  post: PostWithUser & {
+    initialComments?: unknown[];
+  };
 };
 
 // 日時をフォーマットする関数
@@ -109,7 +111,10 @@ export default function PostDetailView({ post }: PostDetailViewProps) {
         {/* コメント欄 */}
         <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
           <h2 className="text-xl font-semibold mb-4 text-gray-900">コメント</h2>
-          <OptimizedCommentSection postId={currentPost.id} />
+          <OptimizedCommentSection
+            postId={currentPost.id}
+            initialComments={post.initialComments}
+          />
         </div>
       </div>
 

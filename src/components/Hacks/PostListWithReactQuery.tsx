@@ -8,21 +8,35 @@ import Post from "./GetHackPosts";
 type PostListWithReactQueryProps = {
   showComments?: boolean;
   initialPageSize?: number;
+  initialPosts?: unknown[];
 };
 
 export default function PostListWithReactQuery({
   showComments = false,
   initialPageSize = 5,
+  initialPosts = [],
 }: PostListWithReactQueryProps) {
   const { user } = useAuthState();
   const [displayCount, setDisplayCount] = useState(initialPageSize);
 
   // React Queryでデータ取得（自動キャッシュ・再取得）
-  const { data, isLoading, error } = usePosts({
-    limit: 50,
-    offset: 0,
-    userId: user?.uid,
-  });
+  // initialPostsがある場合は初期データとして使用
+  const initialData =
+    initialPosts.length > 0
+      ? {
+          posts: initialPosts as any,
+          pagination: { limit: 50, offset: 0, total: initialPosts.length },
+        }
+      : undefined;
+
+  const { data, isLoading, error } = usePosts(
+    {
+      limit: 50,
+      offset: 0,
+      userId: user?.uid,
+    },
+    initialData
+  );
 
   const posts = data?.posts || [];
 
