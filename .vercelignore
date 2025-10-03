@@ -1,0 +1,28 @@
+# Vercel にアップロードしないファイル
+
+# 環境変数（Vercelダッシュボードで設定）
+.env*
+!.env.example
+!.env.local.example
+!.env.production.example
+
+# ローカル開発
+node_modules
+.DS_Store
+
+# テスト・ドキュメント
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+coverage/
+docs/
+*.md
+!README.md
+
+# Prisma
+prisma/migrations/
+
+# Git
+.git
+.gitignore
