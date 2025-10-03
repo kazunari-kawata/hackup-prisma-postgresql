@@ -4,7 +4,7 @@ import { PostWithUser } from "@/lib/dao/post";
 import UserHeader from "@/components/Hacks/UserHeader";
 import HackTitleContent from "@/components/Hacks/HackTitleContent";
 import AuthenticatedReaction from "@/components/Reaction/AuthenticatedReaction";
-import AuthenticatedCommentSection from "@/components/Comments/AuthenticatedCommentSection";
+import OptimizedCommentSection from "@/components/Comments/OptimizedCommentSection";
 import { EditPostModal } from "@/components/editDeleteButtons/EditPostModal";
 import { useState } from "react";
 
@@ -36,7 +36,6 @@ function formatDate(date: Date): string {
 export default function PostDetailView({ post }: PostDetailViewProps) {
   const [currentPost, setCurrentPost] = useState(post);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [commentRefreshTrigger, setCommentRefreshTrigger] = useState(0);
 
   const handleEdit = () => {
     setIsEditModalOpen(true);
@@ -103,20 +102,14 @@ export default function PostDetailView({ post }: PostDetailViewProps) {
           <HackTitleContent post={currentPost} />
 
           <div className={"w-full mt-4 flex justify-center"}>
-            <AuthenticatedReaction
-              postId={currentPost.id}
-              commentRefreshTrigger={commentRefreshTrigger}
-            />
+            <AuthenticatedReaction postId={currentPost.id} />
           </div>
         </div>
 
         {/* コメント欄 */}
         <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
           <h2 className="text-xl font-semibold mb-4 text-gray-900">コメント</h2>
-          <AuthenticatedCommentSection
-            postId={currentPost.id}
-            onCommentChange={() => setCommentRefreshTrigger((prev) => prev + 1)}
-          />
+          <OptimizedCommentSection postId={currentPost.id} />
         </div>
       </div>
 
