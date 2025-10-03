@@ -30,32 +30,19 @@ export default function CommentHeader({
   const isAuthor = user && authorUid && user.uid === authorUid;
 
   const handleDelete = async () => {
-    if (
-      !confirm("このコメントを削除しますか？この操作は取り消せません。") ||
-      !commentId
-    ) {
+    if (!onDelete) return;
+
+    if (!confirm("このコメントを削除しますか？この操作は取り消せません。")) {
       return;
     }
 
     setIsDeleting(true);
     setIsMenuOpen(false);
-    try {
-      const response = await fetch(`/api/comments?id=${commentId}`, {
-        method: "DELETE",
-      });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "削除に失敗しました");
-      }
+    // 親コンポーネントの削除処理を呼ぶ（React Queryのオプティミスティック更新が実行される）
+    onDelete();
 
-      onDelete?.();
-    } catch (error) {
-      console.error("削除エラー:", error);
-      alert(error instanceof Error ? error.message : "削除に失敗しました");
-    } finally {
-      setIsDeleting(false);
-    }
+    setIsDeleting(false);
   };
 
   return (

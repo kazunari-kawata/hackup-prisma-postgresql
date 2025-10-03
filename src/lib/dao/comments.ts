@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 /**
  * すべてのコメントを取得する関数
  * 投稿された全コメントを配列で返します。ユーザー情報も含みます。
- * 例：記事詳細ページや管理画面でコメント一覧を表示したいときに使います。
+ * 例：記事詳細ページでコメント一覧を表示したいときに使います。
  */
 export async function getComments(PostId: number) {
   return await prisma.comment.findMany({
@@ -111,14 +111,28 @@ export async function updateComment(id: number, data: { content?: string }) {
  * 例：ユーザーが自分のコメントを削除したいときや、管理者が不適切なコメントを消したいときに使います。
  */
 export async function deleteComment(id: number) {
-  return await prisma.comment.delete({
-    where: { id },
-    select: {
-      id: true,
-      postId: true,
-      userId: true,
-      content: true,
-      createdAt: true,
-    },
+  // トランザクションで関連データを先に削除してからコメントを削除
+  return await prisma.$transaction(async (tx) => {
+    // 1. コメントに紐づくいいねを全て削除
+    await tx.commentLike.deleteMany({
+      where: { commentId: id },
+    });
+
+    // 2. コメントに紐づく投票を全て削除
+    await tx.commentVote.deleteMany({
+      where: { commentId: id },
+    });
+
+    // 3. コメント本体を削除
+    return await tx.comment.delete({
+      where: { id },
+      select: {
+        id: true,
+        postId: true,
+        userId: true,
+        content: true,
+        createdAt: true,
+      },
+    });
   });
 }
