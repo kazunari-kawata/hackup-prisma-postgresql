@@ -1,5 +1,6 @@
 {
   "framework": "nextjs",
+  "regions": ["hnd1"],
   "rewrites": [
     {
       "source": "/api/:path*",
@@ -16,12 +17,5 @@
         }
       ]
     }
-  ],
-
-  "regions": ["hnd1"],
-  "functions": {
-    "api/**/*.ts": {
-      "maxDuration": 10
-    }
-  }
+  ]
 }
