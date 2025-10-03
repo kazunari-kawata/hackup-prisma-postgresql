@@ -23,10 +23,10 @@ export default function PostListWithReactQuery({
   // initialPostsがある場合は初期データとして使用
   const initialData =
     initialPosts.length > 0
-      ? {
-          posts: initialPosts as any,
+      ? ({
+          posts: initialPosts,
           pagination: { limit: 50, offset: 0, total: initialPosts.length },
-        }
+        } as const)
       : undefined;
 
   const { data, isLoading, error } = usePosts(
@@ -35,7 +35,8 @@ export default function PostListWithReactQuery({
       offset: 0,
       userId: user?.uid,
     },
-    initialData
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    initialData as any
   );
 
   const posts = data?.posts || [];
