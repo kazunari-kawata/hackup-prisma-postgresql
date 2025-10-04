@@ -87,9 +87,12 @@ export function useCreateComment(postId: number) {
         postId,
       ]);
 
+      // 一時的なIDを生成（大きな数値で本物のIDと区別）
+      const tempId = Date.now() + 1000000000000;
+
       // 楽観的に新しいコメントを追加
       const optimisticComment: Comment = {
-        id: Date.now(), // 一時的なID
+        id: tempId, // 一時的なID（大きな数値）
         postId: newComment.postId,
         userId: newComment.userId,
         content: newComment.content,
@@ -107,7 +110,7 @@ export function useCreateComment(postId: number) {
         ...(old || []),
       ]);
 
-      return { previousComments };
+      return { previousComments, tempId };
     },
 
     // エラー時: ロールバック
@@ -121,9 +124,26 @@ export function useCreateComment(postId: number) {
       console.error("Failed to create comment:", err);
     },
 
-    // 成功時: サーバーデータで更新
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["comments", postId] });
+    // 成功時: サーバーから返された実データで楽観的コメントを置き換え
+    onSuccess: (serverComment, variables, context) => {
+      console.log(
+        "[useComments] Comment created successfully, replacing optimistic comment with server data"
+      );
+
+      queryClient.setQueryData<Comment[]>(["comments", postId], (old) => {
+        if (!old) return [serverComment];
+
+        // 楽観的コメント（一時ID）を実際のサーバーデータで置き換え
+        const newComments = old.map((comment) =>
+          comment.id === context?.tempId ? serverComment : comment
+        );
+
+        // 作成日時で降順ソート
+        return newComments.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      });
     },
   });
 }
@@ -174,7 +194,10 @@ export function useDeleteComment(postId: number) {
     },
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["comments", postId] });
+      console.log(
+        "[useComments] Comment deleted successfully (already optimistically removed)"
+      );
+      // 楽観的更新で既に削除済みなので、invalidateQueriesは不要
     },
   });
 }

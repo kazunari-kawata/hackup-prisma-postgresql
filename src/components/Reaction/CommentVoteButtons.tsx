@@ -87,6 +87,27 @@ export default function CommentVoteButtons({
         setDownCount((c) => (type === "DOWN" ? Math.max(0, c - 1) : c));
       } else {
         // 新規投票 or 切り替え
+        // 楽観的UI更新（先にUIを更新）
+        const previousVote = vote;
+        setVote(type);
+
+        if (previousVote === "UP") {
+          // UPからDOWNへ切り替え
+          setUpCount((c) => Math.max(0, c - 1));
+          setDownCount((c) => c + 1);
+        } else if (previousVote === "DOWN") {
+          // DOWNからUPへ切り替え
+          setDownCount((c) => Math.max(0, c - 1));
+          setUpCount((c) => c + 1);
+        } else {
+          // 新規投票
+          if (type === "UP") {
+            setUpCount((c) => c + 1);
+          } else {
+            setDownCount((c) => c + 1);
+          }
+        }
+
         const res = await fetch(`/api/comment-votes`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -100,8 +121,6 @@ export default function CommentVoteButtons({
           const errorData = await res.json();
           throw new Error(errorData.error || "投票の登録に失敗しました");
         }
-        // サーバーから最新データを取得
-        await fetchVotes();
       }
       setError(null);
     } catch (err) {

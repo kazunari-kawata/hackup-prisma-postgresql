@@ -6,8 +6,13 @@ import {
   deleteComment,
 } from "@/lib/dao/comments";
 
+// キャッシュ設定: コメントは動的コンテンツ
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 // GET: コメント一覧または単一コメント
 export async function GET(req: Request) {
+  const startTime = Date.now();
   try {
     const { searchParams } = new URL(req.url);
     const commentId = searchParams.get("id");
@@ -15,9 +20,17 @@ export async function GET(req: Request) {
 
     if (commentId) {
       const comment = await getCommentById(Number(commentId));
+      console.log(
+        `[Comments API] GET single comment in ${Date.now() - startTime}ms`
+      );
       return NextResponse.json(comment);
     } else if (postId) {
       const comments = await getComments(Number(postId));
+      console.log(
+        `[Comments API] GET comments for post ${postId} in ${
+          Date.now() - startTime
+        }ms, count: ${comments.length}`
+      );
       return NextResponse.json(comments);
     } else {
       // postIdが指定されていない場合は空配列を返す
@@ -37,6 +50,7 @@ export async function GET(req: Request) {
 
 // POST: 新規コメント作成
 export async function POST(req: Request) {
+  const startTime = Date.now();
   try {
     console.log("[Comments API] POST request received");
 
@@ -62,9 +76,15 @@ export async function POST(req: Request) {
       );
     }
 
+    const dbStartTime = Date.now();
     console.log("[Comments API] Creating comment...");
     const comment = await createComment({ postId, userId, content });
-    console.log("[Comments API] Comment created successfully:", comment.id);
+    console.log(
+      `[Comments API] Comment created in ${Date.now() - dbStartTime}ms, total ${
+        Date.now() - startTime
+      }ms:`,
+      comment.id
+    );
 
     return NextResponse.json(comment, { status: 201 });
   } catch (error) {
