@@ -16,6 +16,14 @@ export default function VoteButtons({
   const { user, isAuthenticated } = useAuthState();
   const userId = propUserId || user?.uid || "";
 
+  console.log("[VoteButtons] Component mounted/updated:", {
+    postId,
+    propUserId,
+    userUid: user?.uid,
+    userId,
+    isAuthenticated,
+  });
+
   const [vote, setVote] = useState<"UP" | "DOWN" | null>(null);
   const [upCount, setUpCount] = useState(0);
   const [downCount, setDownCount] = useState(0);
@@ -65,6 +73,18 @@ export default function VoteButtons({
 
   // アゲサゲボタン押下時
   const handleVote = async (type: "UP" | "DOWN") => {
+    console.log("[VoteButtons] Vote button clicked:", {
+      postId,
+      userId,
+      type,
+      canVote,
+    });
+
+    if (!canVote) {
+      console.warn("[VoteButtons] User not authenticated, cannot vote");
+      return;
+    }
+
     const prevVote = vote;
     const prevUpCount = upCount;
     const prevDownCount = downCount;
@@ -72,14 +92,19 @@ export default function VoteButtons({
     try {
       if (vote === type) {
         // 同じ投票の取り消し
+        console.log("[VoteButtons] Canceling vote:", type);
         const res = await fetch(
           `/api/post-votes?postId=${postId}&userId=${userId}`,
           {
             method: "DELETE",
           }
         );
+
+        console.log("[VoteButtons] DELETE response status:", res.status);
+
         if (!res.ok) {
           const errorData = await res.json();
+          console.error("[VoteButtons] DELETE failed:", errorData);
           throw new Error(errorData.error || "投票の取り消しに失敗しました");
         }
         setVote(null);
@@ -87,6 +112,33 @@ export default function VoteButtons({
         setDownCount((c) => (type === "DOWN" ? Math.max(0, c - 1) : c));
       } else {
         // 新規投票 or 切り替え
+        console.log("[VoteButtons] Creating/updating vote:", {
+          postId,
+          userId,
+          voteType: type,
+        });
+
+        // 楽観的UI更新（先にUIを更新）
+        const previousVote = vote;
+        setVote(type);
+
+        if (previousVote === "UP") {
+          // UPからDOWNへ切り替え
+          setUpCount((c) => Math.max(0, c - 1));
+          setDownCount((c) => c + 1);
+        } else if (previousVote === "DOWN") {
+          // DOWNからUPへ切り替え
+          setDownCount((c) => Math.max(0, c - 1));
+          setUpCount((c) => c + 1);
+        } else {
+          // 新規投票
+          if (type === "UP") {
+            setUpCount((c) => c + 1);
+          } else {
+            setDownCount((c) => c + 1);
+          }
+        }
+
         const res = await fetch(`/api/post-votes`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -96,15 +148,22 @@ export default function VoteButtons({
             voteType: type,
           }),
         });
+
+        console.log("[VoteButtons] POST response status:", res.status);
+
         if (!res.ok) {
           const errorData = await res.json();
+          console.error("[VoteButtons] POST failed:", errorData);
           throw new Error(errorData.error || "投票の登録に失敗しました");
         }
-        // サーバーから最新データを取得
-        await fetchVotes();
+
+        console.log(
+          "[VoteButtons] Vote successful (optimistic update applied)"
+        );
       }
       setError(null);
     } catch (err) {
+      console.error("[VoteButtons] Vote error:", err);
       setVote(prevVote);
       setUpCount(prevUpCount);
       setDownCount(prevDownCount);
