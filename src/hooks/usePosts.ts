@@ -147,7 +147,7 @@ export function useToggleLike() {
 }
 
 /**
- * 投稿を作成するカスタムフック
+ * 投稿を作成するカスタムフック（楽観的更新）
  */
 export function useCreatePost() {
   const queryClient = useQueryClient();
@@ -157,20 +157,114 @@ export function useCreatePost() {
       title: string;
       content: string;
       userId: string;
+      username?: string | null;
+      iconUrl?: string | null;
     }) => {
       const response = await fetch(`/api/posts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(params),
+        body: JSON.stringify({
+          title: params.title,
+          content: params.content,
+          userId: params.userId,
+        }),
       });
       if (!response.ok) {
-        throw new Error("Failed to create post");
+        const error = await response.json();
+        throw new Error(error.error || "Failed to create post");
       }
       return response.json();
     },
-    onSuccess: () => {
-      // 投稿一覧を再取得
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    onMutate: async (newPostData) => {
+      // 進行中のすべての投稿関連クエリをキャンセル
+      await queryClient.cancelQueries({ queryKey: ["posts"] });
+
+      // 楽観的更新: 一時的なIDで新しい投稿を即座に表示
+      const tempId = Date.now() + 1000000000000; // 大きな数値で識別
+      const optimisticPost = {
+        id: tempId,
+        title: newPostData.title,
+        content: newPostData.content,
+        userId: newPostData.userId,
+        createdAt: new Date().toISOString(),
+        user: {
+          id: newPostData.userId,
+          username: newPostData.username || "投稿中...",
+          iconUrl: newPostData.iconUrl || null,
+        },
+        _count: {
+          likes: 0,
+          comments: 0,
+        },
+        stats: {
+          likes: 0,
+          comments: 0,
+          upVotes: 0,
+          downVotes: 0,
+          userVote: null,
+          userLiked: false,
+        },
+      };
+
+      // すべての投稿クエリキャッシュに楽観的更新を適用
+      const previousCaches: Array<{
+        queryKey: readonly unknown[];
+        data: PostsWithStatsResponse;
+      }> = [];
+
+      queryClient
+        .getQueryCache()
+        .findAll({ queryKey: ["posts"] })
+        .forEach((query) => {
+          const oldData = query.state.data as
+            | PostsWithStatsResponse
+            | undefined;
+          if (oldData) {
+            previousCaches.push({
+              queryKey: query.queryKey,
+              data: oldData,
+            });
+
+            // UIに即座に反映（一番上に追加）
+            queryClient.setQueryData<PostsWithStatsResponse>(query.queryKey, {
+              ...oldData,
+              posts: [optimisticPost, ...oldData.posts],
+            });
+          }
+        });
+
+      return { previousCaches, tempId };
+    },
+    onSuccess: (serverPost, variables, context) => {
+      console.log("[usePosts] Post created successfully:", serverPost.id);
+
+      // サーバーから返された実データで一時データを置き換え
+      queryClient
+        .getQueryCache()
+        .findAll({ queryKey: ["posts"] })
+        .forEach((query) => {
+          const oldData = query.state.data as
+            | PostsWithStatsResponse
+            | undefined;
+          if (oldData) {
+            queryClient.setQueryData<PostsWithStatsResponse>(query.queryKey, {
+              ...oldData,
+              posts: oldData.posts.map((post) =>
+                post.id === context?.tempId ? serverPost : post
+              ),
+            });
+          }
+        });
+    },
+    onError: (error, variables, context) => {
+      console.error("[usePosts] Failed to create post:", error);
+
+      // エラー時はすべてのキャッシュをロールバック
+      if (context?.previousCaches) {
+        context.previousCaches.forEach(({ queryKey, data }) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
     },
   });
 }
