@@ -116,7 +116,18 @@ export default function VoteButtons({
           postId,
           userId,
           voteType: type,
+          userIdType: typeof userId,
+          userIdLength: userId?.length,
+          isUserIdValid: !!userId && userId.length > 0,
         });
+
+        // userIdが空の場合はエラー
+        if (!userId || userId.length === 0) {
+          console.error("[VoteButtons] userId is empty or invalid");
+          throw new Error(
+            "ユーザーIDが無効です。ログイン状態を確認してください。"
+          );
+        }
 
         // 楽観的UI更新（先にUIを更新）
         const previousVote = vote;
@@ -139,14 +150,18 @@ export default function VoteButtons({
           }
         }
 
+        const requestBody = {
+          postId: Number(postId),
+          userId: String(userId),
+          voteType: type,
+        };
+
+        console.log("[VoteButtons] Request body:", requestBody);
+
         const res = await fetch(`/api/post-votes`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            postId,
-            userId,
-            voteType: type,
-          }),
+          body: JSON.stringify(requestBody),
         });
 
         console.log("[VoteButtons] POST response status:", res.status);
@@ -154,7 +169,18 @@ export default function VoteButtons({
         if (!res.ok) {
           const errorData = await res.json();
           console.error("[VoteButtons] POST failed:", errorData);
-          throw new Error(errorData.error || "投票の登録に失敗しました");
+          console.error("[VoteButtons] Full error details:", {
+            status: res.status,
+            statusText: res.statusText,
+            errorData,
+          });
+
+          // より詳細なエラーメッセージ
+          const errorMsg = errorData.details
+            ? `${errorData.error}: ${JSON.stringify(errorData.details)}`
+            : errorData.error || "投票の登録に失敗しました";
+
+          throw new Error(errorMsg);
         }
 
         console.log(
@@ -176,8 +202,18 @@ export default function VoteButtons({
 
   return (
     <>
-      {error && <p className="text-red-500">{error}</p>}
-      {!canVote && (
+      {error && (
+        <div className="text-red-500 text-sm mb-2 p-2 bg-red-50 rounded border border-red-200">
+          <p className="font-semibold">エラー:</p>
+          <p>{error}</p>
+          {!canVote && (
+            <p className="mt-1 text-xs">
+              ログインしていないか、認証情報が無効です
+            </p>
+          )}
+        </div>
+      )}
+      {!canVote && !error && (
         <p className="text-gray-500 text-sm mb-2">
           投票するにはログインが必要です
         </p>

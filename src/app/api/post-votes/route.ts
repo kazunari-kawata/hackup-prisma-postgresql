@@ -63,14 +63,37 @@ export async function POST(req: NextRequest) {
 
     if (!postId || !userId || !voteType) {
       console.error("[Post Votes API] Missing required fields:", {
-        postId,
-        userId,
-        voteType,
+        postId: postId ?? "undefined",
+        userId: userId ?? "undefined",
+        voteType: voteType ?? "undefined",
+        postIdType: typeof postId,
+        userIdType: typeof userId,
+        voteTypeType: typeof voteType,
       });
       return NextResponse.json(
         {
           error: "Missing required fields",
-          details: { postId, userId, voteType },
+          details: {
+            postId: postId ?? null,
+            userId: userId ?? null,
+            voteType: voteType ?? null,
+            message: `postId: ${!!postId}, userId: ${!!userId}, voteType: ${!!voteType}`,
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    // userIdの型チェック
+    if (typeof userId !== "string" || userId.length === 0) {
+      console.error("[Post Votes API] Invalid userId:", {
+        userId,
+        type: typeof userId,
+      });
+      return NextResponse.json(
+        {
+          error: "Invalid userId",
+          details: { userId, type: typeof userId },
         },
         { status: 400 }
       );
@@ -102,12 +125,12 @@ export async function POST(req: NextRequest) {
       const createStart = Date.now();
       console.log("[Post Votes API] Creating new vote...");
 
-      // 新しい投票を追加
+      // 新しい投票を追加（idは自動採番に任せる）
       const vote = await tx.postVote.create({
         data: {
           postId: Number(postId),
-          userId,
-          voteType,
+          userId: String(userId),
+          voteType: voteType as "UP" | "DOWN",
         },
       });
 
