@@ -1,6 +1,6 @@
 "use client";
 
-import PostForm from "@/components/Hacks/PostHackForm";
+import OptimizedPostForm from "@/components/Hacks/OptimizedPostForm";
 import PostListWithReactQuery from "@/components/Hacks/PostListWithReactQuery";
 import AuthGuard from "@/components/auth/AuthGuard";
 
@@ -13,7 +13,7 @@ export default function AuthenticatedHome({
 }: AuthenticatedHomeProps) {
   return (
     <AuthGuard>
-      <PostForm />
+      <OptimizedPostForm />
       <PostListWithReactQuery initialPageSize={5} initialPosts={initialPosts} />
     </AuthGuard>
   );
